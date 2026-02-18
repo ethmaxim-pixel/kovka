@@ -6,11 +6,11 @@ services:
     container_name: kovka-app
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3002:3000"
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=mysql://kovka:kovka_pass@db:3306/kovka
-      - JWT_SECRET=${JWT_SECRET}
+      - DATABASE_URL=mysql://kovka:K0vka_Dv0r1k_2024!@db:3306/kovka
+      - JWT_SECRET=${JWT_SECRET:-kovka_jwt_secret_change_me}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
     depends_on:
@@ -24,12 +24,12 @@ services:
     container_name: kovka-db
     restart: unless-stopped
     environment:
-      - MYSQL_ROOT_PASSWORD=kovka_root_pass
+      - MYSQL_ROOT_PASSWORD=K0vka_R00t_2024!
       - MYSQL_DATABASE=kovka
       - MYSQL_USER=kovka
-      - MYSQL_PASSWORD=kovka_pass
+      - MYSQL_PASSWORD=K0vka_Dv0r1k_2024!
     volumes:
-      - mysql_data:/var/lib/mysql
+      - kovka_mysql_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
@@ -39,7 +39,7 @@ services:
       - kovka-network
 
 volumes:
-  mysql_data:
+  kovka_mysql_data:
 
 networks:
   kovka-network:
