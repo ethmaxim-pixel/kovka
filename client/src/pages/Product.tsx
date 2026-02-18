@@ -15,7 +15,8 @@ import {
   Clock,
   Share2,
   Truck,
-  RefreshCw
+  RefreshCw,
+  Layers
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -426,6 +427,7 @@ export default function Product() {
         article: dbProduct.article,
         weight: dbProduct.weight || "—",
         size: dbProduct.dimensions || "—",
+        materials: dbProduct.materials || "—",
         inStock: dbProduct.stockStatus !== "to_order",
         description: dbProduct.description || "",
         features: dbProduct.tags || [],
@@ -435,7 +437,7 @@ export default function Product() {
       };
     }
     const hardcoded = productsData.find(p => p.id === Number(slugOrId));
-    if (hardcoded) return { ...hardcoded, metaTitle: null, metaDescription: null, slug: null };
+    if (hardcoded) return { ...hardcoded, materials: "—", metaTitle: null, metaDescription: null, slug: null };
     return null;
   }, [dbProduct, slugOrId]);
 
@@ -648,7 +650,7 @@ export default function Product() {
               </div>
 
               {/* Parameters */}
-              <div className="grid grid-cols-2 gap-4 mb-6 p-4 bg-card rounded-xl border border-border/50">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6 p-4 bg-card rounded-xl border border-border/50">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                     <Hash className="w-5 h-5 text-primary" />
@@ -677,6 +679,15 @@ export default function Product() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Layers className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">Материал</div>
+                    <div className="font-medium text-sm">{product.materials}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 col-span-2 sm:col-span-1">
                   <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                     <Package className="w-5 h-5 text-primary" />
                   </div>
