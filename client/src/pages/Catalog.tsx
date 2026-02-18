@@ -36,6 +36,8 @@ type CatalogProduct = {
   inStock: boolean;
   article: string;
   size: string;
+  materials: string;
+  weight: string;
   slug: string | null;
 };
 
@@ -128,9 +130,11 @@ function ProductCard({ product, viewMode }: { product: CatalogProduct; viewMode:
           <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
             {product.description}
           </p>
-          <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground mb-2">
             <span>Арт: {product.article}</span>
             <span>Размер: {product.size}</span>
+            {product.materials !== "—" && <span>Материал: {product.materials}</span>}
+            {product.weight !== "—" && <span>Вес: {product.weight}</span>}
           </div>
           <div className="mt-auto flex items-center justify-between">
             <span className="text-xl font-bold text-gold-gradient">
@@ -217,10 +221,12 @@ function ProductCard({ product, viewMode }: { product: CatalogProduct; viewMode:
           {product.description}
         </p>
         
-        {/* Article and Size */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+        {/* Article and Characteristics */}
+        <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground mb-2">
           <span>Арт: {product.article}</span>
-          <span>{product.size}</span>
+          {product.size !== "—" && <span>Размер: {product.size}</span>}
+          {product.materials !== "—" && <span>Материал: {product.materials}</span>}
+          {product.weight !== "—" && <span>Вес: {product.weight}</span>}
         </div>
         
         {/* Price */}
@@ -271,20 +277,22 @@ export default function Catalog() {
 
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | undefined>(initialSubcategory);
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(initialCategory !== "all" ? [initialCategory] : []));
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(["Кованные элементы"]));
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   // Fetch category tree from DB
   const { data: categoryTree } = trpc.catalog.categories.list.useQuery();
 
-  // Build tree: main categories with children
+  // Build tree: main categories with children, sorted alphabetically
   const tree = useMemo(() => {
     if (!categoryTree) return [];
     const roots = categoryTree.filter((c: any) => !c.parentId);
     return roots.map((root: any) => ({
       ...root,
-      children: categoryTree.filter((c: any) => c.parentId === root.id),
+      children: categoryTree
+        .filter((c: any) => c.parentId === root.id)
+        .sort((a: any, b: any) => a.name.localeCompare(b.name, 'ru')),
     }));
   }, [categoryTree]);
 
@@ -303,6 +311,8 @@ export default function Catalog() {
     if (mainCat !== "all") {
       setExpandedCategories(prev => { const next = new Set(prev); next.add(mainCat); return next; });
     }
+    // Scroll to top of catalog when selecting a category
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Fetch from DB
@@ -328,6 +338,8 @@ export default function Catalog() {
       inStock: p.stockStatus !== "to_order",
       article: p.article,
       size: p.dimensions || "—",
+      materials: (p as any).materials || "—",
+      weight: (p as any).weight || "—",
       slug: p.slug || null,
     }));
   }, [dbData]);
