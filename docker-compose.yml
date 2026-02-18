@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: kovka-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=mysql://kovka:kovka_pass@db:3306/kovka
+      - JWT_SECRET=${JWT_SECRET}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - kovka-network
+
+  db:
+    image: mysql:8.0
+    container_name: kovka-db
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=kovka_root_pass
+      - MYSQL_DATABASE=kovka
+      - MYSQL_USER=kovka
+      - MYSQL_PASSWORD=kovka_pass
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - kovka-network
+
+volumes:
+  mysql_data:
+
+networks:
+  kovka-network:
+    driver: bridge
