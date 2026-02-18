@@ -1,0 +1,452 @@
+import { useState } from "react";
+import { Link } from "wouter";
+import { motion } from "framer-motion";
+import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, Package, Phone, User, MessageSquare, CheckCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { useCart } from "@/contexts/CartContext";
+import { trpc } from "@/lib/trpc";
+
+/*
+ * Cart Page - Kovka Dvorik
+ * Features: Cart items list, quantity controls, order form
+ * Order form fields: name (required), phone (required), comment (optional)
+ */
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+};
+
+export default function Cart() {
+  const { items, removeItem, updateQuantity, totalItems, totalPrice, clearCart } = useCart();
+  const [isCheckout, setIsCheckout] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState(false);
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    comment: ""
+  });
+  const [errors, setErrors] = useState({
+    name: "",
+    phone: ""
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    // Clear error when user starts typing
+    if (errors[name as keyof typeof errors]) {
+      setErrors(prev => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = { name: "", phone: "" };
+    let isValid = true;
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Введите ваше имя";
+      isValid = false;
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = "Введите номер телефона";
+      isValid = false;
+    } else if (!/^[\d\s\+\-\(\)]{10,}$/.test(formData.phone.trim())) {
+      newErrors.phone = "Введите корректный номер телефона";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  // tRPC mutation for submitting order
+  const submitOrderMutation = trpc.order.submit.useMutation({
+    onSuccess: () => {
+      setOrderSuccess(true);
+      clearCart();
+      toast.success("Заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.");
+    },
+    onError: (error) => {
+      console.error("Order submission error:", error);
+      toast.error("Ошибка при оформлении заказа. Попробуйте позже.");
+    },
+  });
+
+  const handleSubmitOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Prepare order items with article info
+      const orderItems = items.map(item => ({
+        id: item.id,
+        name: item.name,
+        article: item.article || `ART-${item.id}`,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.image,
+      }));
+
+      // Submit order via tRPC
+      await submitOrderMutation.mutateAsync({
+        name: formData.name,
+        phone: formData.phone,
+        comment: formData.comment || undefined,
+        items: orderItems,
+        total: totalPrice,
+      });
+    } catch (error) {
+      // Error handled by mutation onError
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Order success state
+  if (orderSuccess) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        
+        <main className="pt-28 pb-20">
+          <div className="container max-w-2xl">
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={fadeInUp}
+              className="text-center py-16"
+            >
+              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-green-500/20 flex items-center justify-center">
+                <CheckCircle className="w-10 h-10 text-green-500" />
+              </div>
+              <h1 className="text-3xl font-bold mb-4 font-[family-name:var(--font-heading)]">
+                Заказ <span className="text-gold-gradient">оформлен!</span>
+              </h1>
+              <p className="text-muted-foreground mb-8">
+                Спасибо за ваш заказ! Наш менеджер свяжется с вами в ближайшее время для подтверждения.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link href="/">
+                  <Button variant="outline" className="border-primary/50 hover:bg-primary/10">
+                    На главную
+                  </Button>
+                </Link>
+                <Link href="/catalog">
+                  <Button className="btn-gold">
+                    Продолжить покупки
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        </main>
+
+        <Footer />
+      </div>
+    );
+  }
+
+  // Empty cart state
+  if (items.length === 0) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        
+        <main className="pt-28 pb-20">
+          <div className="container max-w-2xl">
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={fadeInUp}
+              className="text-center py-16"
+            >
+              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-muted/50 flex items-center justify-center">
+                <ShoppingCart className="w-10 h-10 text-muted-foreground" />
+              </div>
+              <h1 className="text-3xl font-bold mb-4 font-[family-name:var(--font-heading)]">
+                Корзина <span className="text-gold-gradient">пуста</span>
+              </h1>
+              <p className="text-muted-foreground mb-8">
+                Добавьте товары из каталога, чтобы оформить заказ
+              </p>
+              <Link href="/catalog">
+                <Button className="btn-gold">
+                  Перейти в каталог
+                </Button>
+              </Link>
+            </motion.div>
+          </div>
+        </main>
+
+        <Footer />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      
+      <main className="pt-28 pb-20">
+        <div className="container">
+          {/* Page Header */}
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={fadeInUp}
+            className="mb-8"
+          >
+            <Link href="/catalog" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-4">
+              <ArrowLeft className="w-4 h-4" />
+              Вернуться в каталог
+            </Link>
+            <h1 className="text-3xl md:text-4xl font-bold font-[family-name:var(--font-heading)]">
+              Корзина <span className="text-gold-gradient">({totalItems})</span>
+            </h1>
+          </motion.div>
+
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Cart Items */}
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={fadeInUp}
+              className="lg:col-span-2 space-y-4"
+            >
+              {items.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex gap-4 p-4 rounded-xl bg-card border border-border/50"
+                >
+                  {/* Product Image */}
+                  <Link href={`/product/${item.id}`} className="shrink-0">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-24 h-24 object-cover rounded-lg"
+                    />
+                  </Link>
+                  
+                  {/* Product Info */}
+                  <div className="flex-1 min-w-0">
+                    <Link href={`/product/${item.id}`}>
+                      <h3 className="font-medium text-sm hover:text-primary transition-colors line-clamp-2 font-[family-name:var(--font-heading)]">
+                        {item.name}
+                      </h3>
+                    </Link>
+                    <p className="text-lg font-bold text-gold-gradient mt-1">
+                      {item.price.toLocaleString()} ₽
+                    </p>
+                    
+                    {/* Quantity Controls */}
+                    <div className="flex items-center gap-4 mt-3">
+                      <div className="flex items-center border border-border/50 rounded-lg">
+                        <button
+                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          className="p-1.5 hover:bg-muted/50 transition-colors rounded-l-lg"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </button>
+                        <span className="w-10 text-center text-sm font-medium">{item.quantity}</span>
+                        <button
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          className="p-1.5 hover:bg-muted/50 transition-colors rounded-r-lg"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        = {(item.price * item.quantity).toLocaleString()} ₽
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Remove Button */}
+                  <button
+                    onClick={() => removeItem(item.id)}
+                    className="shrink-0 p-2 text-muted-foreground hover:text-destructive transition-colors"
+                    aria-label="Удалить товар"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
+              ))}
+            </motion.div>
+
+            {/* Order Summary / Checkout Form */}
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={fadeInUp}
+              className="lg:col-span-1"
+            >
+              <div className="sticky top-28 p-6 rounded-xl bg-card border border-border/50">
+                {!isCheckout ? (
+                  <>
+                    <h2 className="text-xl font-bold mb-6 font-[family-name:var(--font-heading)]">
+                      Итого
+                    </h2>
+                    
+                    <div className="space-y-3 mb-6">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Товаров:</span>
+                        <span>{totalItems} шт.</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Сумма:</span>
+                        <span>{totalPrice.toLocaleString()} ₽</span>
+                      </div>
+                      <div className="border-t border-border/50 pt-3">
+                        <div className="flex justify-between">
+                          <span className="font-medium">К оплате:</span>
+                          <span className="text-xl font-bold text-gold-gradient">
+                            {totalPrice.toLocaleString()} ₽
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <Button
+                      className="w-full btn-gold"
+                      onClick={() => setIsCheckout(true)}
+                    >
+                      <Package className="w-4 h-4 mr-2" />
+                      Оформить заказ
+                    </Button>
+                    
+                    <button
+                      onClick={() => {
+                        clearCart();
+                        toast.info("Корзина очищена");
+                      }}
+                      className="w-full mt-3 text-sm text-muted-foreground hover:text-destructive transition-colors"
+                    >
+                      Очистить корзину
+                    </button>
+                  </>
+                ) : (
+                  <form onSubmit={handleSubmitOrder}>
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-xl font-bold font-[family-name:var(--font-heading)]">
+                        Оформление
+                      </h2>
+                      <button
+                        type="button"
+                        onClick={() => setIsCheckout(false)}
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        Назад
+                      </button>
+                    </div>
+                    
+                    <div className="space-y-4 mb-6">
+                      {/* Name Field */}
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          <User className="w-4 h-4 inline mr-2" />
+                          Ваше имя <span className="text-destructive">*</span>
+                        </label>
+                        <Input
+                          name="name"
+                          value={formData.name}
+                          onChange={handleInputChange}
+                          placeholder="Введите ваше имя"
+                          className={`bg-background border-border/50 ${errors.name ? "border-destructive" : ""}`}
+                        />
+                        {errors.name && (
+                          <p className="text-xs text-destructive mt-1">{errors.name}</p>
+                        )}
+                      </div>
+                      
+                      {/* Phone Field */}
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          <Phone className="w-4 h-4 inline mr-2" />
+                          Номер телефона <span className="text-destructive">*</span>
+                        </label>
+                        <Input
+                          name="phone"
+                          type="tel"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          placeholder="+7 (___) ___-__-__"
+                          className={`bg-background border-border/50 ${errors.phone ? "border-destructive" : ""}`}
+                        />
+                        {errors.phone && (
+                          <p className="text-xs text-destructive mt-1">{errors.phone}</p>
+                        )}
+                      </div>
+                      
+                      {/* Comment Field */}
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          <MessageSquare className="w-4 h-4 inline mr-2" />
+                          Комментарий к заказу
+                        </label>
+                        <Textarea
+                          name="comment"
+                          value={formData.comment}
+                          onChange={handleInputChange}
+                          placeholder="Дополнительная информация по заказу..."
+                          className="bg-background border-border/50 min-h-[80px]"
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Order Summary */}
+                    <div className="border-t border-border/50 pt-4 mb-6">
+                      <div className="flex justify-between mb-2">
+                        <span className="text-muted-foreground">К оплате:</span>
+                        <span className="text-xl font-bold text-gold-gradient">
+                          {totalPrice.toLocaleString()} ₽
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Наш менеджер свяжется с вами для подтверждения заказа и уточнения деталей доставки.
+                      </p>
+                    </div>
+                    
+                    <Button
+                      type="submit"
+                      className="w-full btn-gold"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <span className="animate-spin mr-2">⏳</span>
+                          Оформляем...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Подтвердить заказ
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}

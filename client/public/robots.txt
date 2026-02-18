@@ -1,0 +1,28 @@
+# Robots.txt for Kovka v Dvorik
+# https://kovkavdvorik.ru
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://kovkavdvorik.ru/sitemap.xml
+
+# Disallow admin and private areas
+Disallow: /api/
+Disallow: /admin
+
+# Allow all crawlers to index the site
+User-agent: Googlebot
+Allow: /
+
+User-agent: Yandex
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Mail.RU_Bot
+Allow: /
+
+# Crawl delay for respectful crawling
+Crawl-delay: 1
