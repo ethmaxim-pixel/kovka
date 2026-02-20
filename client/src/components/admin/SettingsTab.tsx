@@ -7,11 +7,12 @@ const categoryLabels: Record<string, string> = {
   contacts: "Контакты",
   schedule: "Расписание",
   delivery: "Доставка",
+  discounts: "Скидки",
   ai: "AI-ассистент",
   general: "Общие",
 };
 
-const categoryOrder = ["contacts", "schedule", "delivery", "ai", "general"];
+const categoryOrder = ["contacts", "schedule", "delivery", "discounts", "ai", "general"];
 
 const pageLabels: Record<string, string> = {
   home: "Главная",
@@ -323,6 +324,155 @@ function RequisitesSection() {
   );
 }
 
+// ── Discount & Delivery Settings ──
+const defaultTiers = [
+  { min: 30000, percent: 5 },
+  { min: 50000, percent: 10 },
+  { min: 100000, percent: 15 },
+  { min: 200000, percent: 20 },
+  { min: 500000, percent: 25 },
+  { min: 1000000, percent: 30 },
+];
+
+function DiscountDeliverySection() {
+  const { data: tiersData, refetch: refetchTiers } = trpc.settings.get.useQuery({ key: "discount_tiers" });
+  const { data: freeMinData, refetch: refetchFreeMin } = trpc.settings.get.useQuery({ key: "free_delivery_min" });
+  const { data: deliveryPriceData, refetch: refetchDeliveryPrice } = trpc.settings.get.useQuery({ key: "delivery_price" });
+  const setMutation = trpc.settings.set.useMutation();
+
+  const [tiers, setTiers] = useState<{ min: number; percent: number }[]>(defaultTiers);
+  const [freeMin, setFreeMin] = useState("30000");
+  const [delivPrice, setDelivPrice] = useState("500");
+  const [dirty, setDirty] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (tiersData?.value) {
+      try { setTiers(JSON.parse(tiersData.value)); } catch { setTiers(defaultTiers); }
+    }
+    if (freeMinData?.value) setFreeMin(freeMinData.value);
+    if (deliveryPriceData?.value) setDelivPrice(deliveryPriceData.value);
+    setDirty(false);
+  }, [tiersData, freeMinData, deliveryPriceData]);
+
+  const updateTier = (index: number, field: "min" | "percent", value: string) => {
+    setTiers(prev => prev.map((t, i) => i === index ? { ...t, [field]: Number(value) || 0 } : t));
+    setDirty(true);
+  };
+
+  const addTier = () => {
+    const lastMin = tiers.length > 0 ? tiers[tiers.length - 1].min : 0;
+    setTiers(prev => [...prev, { min: lastMin + 50000, percent: (tiers[tiers.length - 1]?.percent || 0) + 5 }]);
+    setDirty(true);
+  };
+
+  const removeTier = (index: number) => {
+    setTiers(prev => prev.filter((_, i) => i !== index));
+    setDirty(true);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const sorted = [...tiers].sort((a, b) => a.min - b.min);
+      await Promise.all([
+        setMutation.mutateAsync({ key: "discount_tiers", value: JSON.stringify(sorted), type: "json", category: "discounts", description: "Шкала оптовых скидок (сумма → процент)" }),
+        setMutation.mutateAsync({ key: "free_delivery_min", value: freeMin, type: "number", category: "delivery", description: "Минимальная сумма заказа для бесплатной доставки (₽)" }),
+        setMutation.mutateAsync({ key: "delivery_price", value: delivPrice, type: "number", category: "delivery", description: "Стоимость доставки по городу (₽)" }),
+      ]);
+      toast.success("Настройки скидок и доставки сохранены");
+      setDirty(false);
+      refetchTiers(); refetchFreeMin(); refetchDeliveryPrice();
+    } catch {
+      toast.error("Ошибка сохранения");
+    } finally { setSaving(false); }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      {/* Discount Tiers */}
+      <div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "#3D3530", marginBottom: 8 }}>Шкала скидок</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 32px", gap: 8, fontSize: 11, color: "#9A938C", fontWeight: 600, padding: "0 2px" }}>
+            <span>Сумма заказа от (₽)</span>
+            <span>Скидка (%)</span>
+            <span></span>
+          </div>
+          {tiers.map((tier, i) => (
+            <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 32px", gap: 8, alignItems: "center" }}>
+              <input
+                className="st-input"
+                type="number"
+                value={tier.min}
+                onChange={e => updateTier(i, "min", e.target.value)}
+                style={{ padding: "6px 8px", fontSize: 13 }}
+              />
+              <input
+                className="st-input"
+                type="number"
+                value={tier.percent}
+                onChange={e => updateTier(i, "percent", e.target.value)}
+                style={{ padding: "6px 8px", fontSize: 13 }}
+              />
+              <button
+                className="st-icon-btn st-icon-btn-danger"
+                onClick={() => removeTier(i)}
+                title="Удалить"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+        <button
+          className="st-content-add-btn"
+          onClick={addTier}
+          style={{ marginTop: 8 }}
+        >
+          <Plus size={14} /> Добавить уровень
+        </button>
+      </div>
+
+      {/* Delivery settings */}
+      <div style={{ borderTop: "1px solid #F0EDE8", paddingTop: 16 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "#3D3530", marginBottom: 8 }}>Настройки доставки</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div className="st-item" style={{ padding: 12 }}>
+            <div className="st-item-header" style={{ marginBottom: 6 }}>
+              <label className="st-item-label" style={{ fontSize: 13 }}>Стоимость доставки по городу (₽)</label>
+            </div>
+            <input
+              className="st-input"
+              type="number"
+              value={delivPrice}
+              onChange={e => { setDelivPrice(e.target.value); setDirty(true); }}
+            />
+          </div>
+          <div className="st-item" style={{ padding: 12 }}>
+            <div className="st-item-header" style={{ marginBottom: 6 }}>
+              <label className="st-item-label" style={{ fontSize: 13 }}>Бесплатная доставка от (₽)</label>
+            </div>
+            <input
+              className="st-input"
+              type="number"
+              value={freeMin}
+              onChange={e => { setFreeMin(e.target.value); setDirty(true); }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {dirty && (
+        <button className="st-save-btn" onClick={handleSave} disabled={saving} style={{ alignSelf: "flex-start" }}>
+          <Save size={16} />
+          {saving ? "Сохранение..." : "Сохранить настройки"}
+        </button>
+      )}
+    </div>
+  );
+}
+
 // ── Categories/Subcategories management ──
 function CategoriesSection() {
   const { data: tree, refetch } = trpc.catalog.getCategoryTree.useQuery();
@@ -624,6 +774,12 @@ export default function SettingsTab() {
           Настройки не найдены. Создайте их через API или сид.
         </div>
       )}
+
+      {/* ═══ DISCOUNT & DELIVERY SECTION ═══ */}
+      <div className="st-group" style={{ marginTop: 32 }}>
+        <h3 className="st-group-title">Скидки и доставка</h3>
+        <DiscountDeliverySection />
+      </div>
 
       {/* ═══ REQUISITES SECTION ═══ */}
       <div className="st-group" style={{ marginTop: 32 }}>

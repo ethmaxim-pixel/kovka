@@ -1,33 +1,145 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, Package, Phone, User, MessageSquare, CheckCircle } from "lucide-react";
+import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, Package, Phone, User, MessageSquare, CheckCircle, Percent, Truck, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import PhoneMaskedInput from "@/components/PhoneMaskedInput";
 import { useCart } from "@/contexts/CartContext";
 import { trpc } from "@/lib/trpc";
 
 /*
  * Cart Page - Kovka Dvorik
- * Features: Cart items list, quantity controls, order form
- * Order form fields: name (required), phone (required), comment (optional)
+ * Features: Cart items list, quantity controls, order form, discount calculator, delivery selection
  */
+
+// Default discount tiers (can be overridden by admin settings)
+const DEFAULT_DISCOUNT_TIERS = [
+  { min: 30000, percent: 5 },
+  { min: 50000, percent: 10 },
+  { min: 100000, percent: 15 },
+  { min: 200000, percent: 20 },
+  { min: 500000, percent: 25 },
+  { min: 1000000, percent: 30 },
+];
+
+const DEFAULT_FREE_DELIVERY_MIN = 30000;
+const DEFAULT_DELIVERY_PRICE = 500;
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
 };
 
+// Discount Progress Bar Component
+function DiscountProgress({ totalPrice, tiers }: { totalPrice: number; tiers: typeof DEFAULT_DISCOUNT_TIERS }) {
+  // Find current and next tier
+  const currentTier = [...tiers].reverse().find(t => totalPrice >= t.min);
+  const nextTier = tiers.find(t => totalPrice < t.min);
+
+  if (!nextTier && currentTier) {
+    // Max discount reached
+    return (
+      <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/30">
+        <div className="flex items-center gap-2 mb-2">
+          <Percent className="w-4 h-4 text-green-500" />
+          <span className="text-sm font-semibold text-green-500">
+            Ваша скидка: {currentTier.percent}%
+          </span>
+        </div>
+        <div className="w-full bg-green-500/20 rounded-full h-2">
+          <div className="bg-green-500 h-2 rounded-full w-full" />
+        </div>
+        <p className="text-xs text-green-500/80 mt-2">Максимальная скидка достигнута!</p>
+      </div>
+    );
+  }
+
+  if (!nextTier) return null;
+
+  const prevMin = currentTier ? currentTier.min : 0;
+  const remaining = nextTier.min - totalPrice;
+  const progress = totalPrice > 0 ? Math.min(((totalPrice - prevMin) / (nextTier.min - prevMin)) * 100, 100) : 0;
+
+  return (
+    <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
+      <div className="flex items-center gap-2 mb-2">
+        <Percent className="w-4 h-4 text-primary" />
+        {currentTier ? (
+          <span className="text-sm font-semibold">
+            Ваша скидка: <span className="text-gold-gradient">{currentTier.percent}%</span>
+          </span>
+        ) : (
+          <span className="text-sm font-semibold text-muted-foreground">
+            Скидка ещё не доступна
+          </span>
+        )}
+      </div>
+      <div className="w-full bg-muted rounded-full h-2 mb-2">
+        <div
+          className="bg-primary h-2 rounded-full transition-all duration-500"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Добавьте товаров ещё на <span className="font-semibold text-foreground">{remaining.toLocaleString()} ₽</span> для скидки <span className="font-semibold text-gold-gradient">{nextTier.percent}%</span>
+      </p>
+    </div>
+  );
+}
+
 export default function Cart() {
   const { items, removeItem, updateQuantity, totalItems, totalPrice, clearCart } = useCart();
   const [isCheckout, setIsCheckout] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
-  
+  const [deliveryType, setDeliveryType] = useState<"pickup" | "delivery">("pickup");
+
+  // Fetch discount/delivery settings from DB
+  const { data: settingsData } = trpc.settings.getMany.useQuery({
+    keys: ["discount_tiers", "free_delivery_min", "delivery_price"],
+  });
+
+  // Parse settings with defaults
+  const discountTiers = useMemo(() => {
+    if (settingsData?.discount_tiers) {
+      try {
+        return JSON.parse(settingsData.discount_tiers) as typeof DEFAULT_DISCOUNT_TIERS;
+      } catch { /* use default */ }
+    }
+    return DEFAULT_DISCOUNT_TIERS;
+  }, [settingsData]);
+
+  const freeDeliveryMin = settingsData?.free_delivery_min
+    ? Number(settingsData.free_delivery_min)
+    : DEFAULT_FREE_DELIVERY_MIN;
+
+  const deliveryPrice = settingsData?.delivery_price
+    ? Number(settingsData.delivery_price)
+    : DEFAULT_DELIVERY_PRICE;
+
+  // Calculate discount
+  const currentDiscount = useMemo(() => {
+    const tier = [...discountTiers].reverse().find(t => totalPrice >= t.min);
+    return tier?.percent || 0;
+  }, [totalPrice, discountTiers]);
+
+  const discountAmount = Math.round(totalPrice * currentDiscount / 100);
+  const priceAfterDiscount = totalPrice - discountAmount;
+
+  // Calculate delivery cost
+  const deliveryCost = useMemo(() => {
+    if (deliveryType === "pickup") return 0;
+    if (totalPrice >= freeDeliveryMin) return 0;
+    return deliveryPrice;
+  }, [deliveryType, totalPrice, freeDeliveryMin, deliveryPrice]);
+
+  const finalPrice = priceAfterDiscount + deliveryCost;
+
   // Form state
   const [formData, setFormData] = useState({
     name: "",
@@ -103,12 +215,21 @@ export default function Cart() {
       }));
 
       // Submit order via tRPC
+      const deliveryInfo = deliveryType === "pickup" ? "Самовывоз" : "Доставка (ЛНР/ДНР)";
+      const discountInfo = currentDiscount > 0 ? `Скидка ${currentDiscount}%: -${discountAmount.toLocaleString()} ₽` : "";
+      const fullComment = [
+        formData.comment,
+        `Способ получения: ${deliveryInfo}`,
+        discountInfo,
+        deliveryCost > 0 ? `Доставка: от ${deliveryCost.toLocaleString()} ₽` : "",
+      ].filter(Boolean).join("\n");
+
       await submitOrderMutation.mutateAsync({
         name: formData.name,
         phone: formData.phone,
-        comment: formData.comment || undefined,
+        comment: fullComment || undefined,
         items: orderItems,
-        total: totalPrice,
+        total: finalPrice,
       });
     } catch (error) {
       // Error handled by mutation onError
@@ -295,13 +416,18 @@ export default function Cart() {
               variants={fadeInUp}
               className="lg:col-span-1"
             >
-              <div className="sticky top-28 p-6 rounded-xl bg-card border border-border/50">
+              <div className="sticky top-28 space-y-4">
+                {/* Discount Progress */}
+                <DiscountProgress totalPrice={totalPrice} tiers={discountTiers} />
+
+                {/* Order Summary Card */}
+                <div className="p-6 rounded-xl bg-card border border-border/50">
                 {!isCheckout ? (
                   <>
                     <h2 className="text-xl font-bold mb-6 font-[family-name:var(--font-heading)]">
                       Итого
                     </h2>
-                    
+
                     <div className="space-y-3 mb-6">
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Товаров:</span>
@@ -311,16 +437,77 @@ export default function Cart() {
                         <span className="text-muted-foreground">Сумма:</span>
                         <span>{totalPrice.toLocaleString()} ₽</span>
                       </div>
+                      {currentDiscount > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-green-500 flex items-center gap-1">
+                            <Percent className="w-3 h-3" />
+                            Скидка {currentDiscount}%:
+                          </span>
+                          <span className="text-green-500">-{discountAmount.toLocaleString()} ₽</span>
+                        </div>
+                      )}
+
+                      {/* Delivery selection */}
                       <div className="border-t border-border/50 pt-3">
+                        <p className="text-sm font-medium mb-2 flex items-center gap-1">
+                          <Truck className="w-4 h-4" />
+                          Доставка
+                        </p>
+                        <div className="space-y-2">
+                          <label className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                            <input
+                              type="radio"
+                              name="delivery"
+                              checked={deliveryType === "pickup"}
+                              onChange={() => setDeliveryType("pickup")}
+                              className="accent-primary"
+                            />
+                            <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
+                            <span className="text-sm">Самовывоз</span>
+                            <span className="ml-auto text-sm text-green-500 font-medium">Бесплатно</span>
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                            <input
+                              type="radio"
+                              name="delivery"
+                              checked={deliveryType === "delivery"}
+                              onChange={() => setDeliveryType("delivery")}
+                              className="accent-primary"
+                            />
+                            <Truck className="w-3.5 h-3.5 text-muted-foreground" />
+                            <span className="text-sm">Доставка (ЛНР/ДНР)</span>
+                            <span className="ml-auto text-sm font-medium">
+                              {totalPrice >= freeDeliveryMin ? (
+                                <span className="text-green-500">Бесплатно</span>
+                              ) : (
+                                <span>от {deliveryPrice.toLocaleString()} ₽</span>
+                              )}
+                            </span>
+                          </label>
+                        </div>
+                        {deliveryType === "delivery" && totalPrice < freeDeliveryMin && (
+                          <p className="text-[11px] text-muted-foreground mt-1 pl-2">
+                            Бесплатная доставка от {freeDeliveryMin.toLocaleString()} ₽
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="border-t border-border/50 pt-3">
+                        {deliveryCost > 0 && (
+                          <div className="flex justify-between text-sm mb-2">
+                            <span className="text-muted-foreground">Доставка:</span>
+                            <span>от {deliveryCost.toLocaleString()} ₽</span>
+                          </div>
+                        )}
                         <div className="flex justify-between">
                           <span className="font-medium">К оплате:</span>
                           <span className="text-xl font-bold text-gold-gradient">
-                            {totalPrice.toLocaleString()} ₽
+                            {finalPrice.toLocaleString()} ₽
                           </span>
                         </div>
                       </div>
                     </div>
-                    
+
                     <Button
                       className="w-full btn-gold"
                       onClick={() => setIsCheckout(true)}
@@ -328,7 +515,7 @@ export default function Cart() {
                       <Package className="w-4 h-4 mr-2" />
                       Оформить заказ
                     </Button>
-                    
+
                     <button
                       onClick={() => {
                         clearCart();
@@ -353,7 +540,7 @@ export default function Cart() {
                         Назад
                       </button>
                     </div>
-                    
+
                     <div className="space-y-4 mb-6">
                       {/* Name Field */}
                       <div>
@@ -372,26 +559,27 @@ export default function Cart() {
                           <p className="text-xs text-destructive mt-1">{errors.name}</p>
                         )}
                       </div>
-                      
+
                       {/* Phone Field */}
                       <div>
                         <label className="block text-sm font-medium mb-2">
                           <Phone className="w-4 h-4 inline mr-2" />
                           Номер телефона <span className="text-destructive">*</span>
                         </label>
-                        <Input
-                          name="phone"
-                          type="tel"
+                        <PhoneMaskedInput
                           value={formData.phone}
-                          onChange={handleInputChange}
-                          placeholder="+7 (___) ___-__-__"
+                          onChange={(phone) => {
+                            setFormData(prev => ({ ...prev, phone }));
+                            if (errors.phone) setErrors(prev => ({ ...prev, phone: "" }));
+                          }}
                           className={`bg-background border-border/50 ${errors.phone ? "border-destructive" : ""}`}
+                          required
                         />
                         {errors.phone && (
                           <p className="text-xs text-destructive mt-1">{errors.phone}</p>
                         )}
                       </div>
-                      
+
                       {/* Comment Field */}
                       <div>
                         <label className="block text-sm font-medium mb-2">
@@ -407,20 +595,40 @@ export default function Cart() {
                         />
                       </div>
                     </div>
-                    
+
                     {/* Order Summary */}
-                    <div className="border-t border-border/50 pt-4 mb-6">
-                      <div className="flex justify-between mb-2">
-                        <span className="text-muted-foreground">К оплате:</span>
+                    <div className="border-t border-border/50 pt-4 mb-6 space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Товары:</span>
+                        <span>{totalPrice.toLocaleString()} ₽</span>
+                      </div>
+                      {currentDiscount > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-green-500">Скидка {currentDiscount}%:</span>
+                          <span className="text-green-500">-{discountAmount.toLocaleString()} ₽</span>
+                        </div>
+                      )}
+                      {deliveryCost > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Доставка:</span>
+                          <span>от {deliveryCost.toLocaleString()} ₽</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Доставка:</span>
+                        <span>{deliveryType === "pickup" ? "Самовывоз" : "Доставка ЛНР/ДНР"}</span>
+                      </div>
+                      <div className="flex justify-between pt-2 border-t border-border/50">
+                        <span className="font-medium">К оплате:</span>
                         <span className="text-xl font-bold text-gold-gradient">
-                          {totalPrice.toLocaleString()} ₽
+                          {finalPrice.toLocaleString()} ₽
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Наш менеджер свяжется с вами для подтверждения заказа и уточнения деталей доставки.
+                        Наш менеджер свяжется с вами для подтверждения заказа.
                       </p>
                     </div>
-                    
+
                     <Button
                       type="submit"
                       className="w-full btn-gold"
@@ -440,6 +648,7 @@ export default function Cart() {
                     </Button>
                   </form>
                 )}
+                </div>
               </div>
             </motion.div>
           </div>

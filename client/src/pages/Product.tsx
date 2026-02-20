@@ -650,50 +650,50 @@ export default function Product() {
               </div>
 
               {/* Parameters */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6 p-4 bg-card rounded-xl border border-border/50">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Hash className="w-5 h-5 text-primary" />
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 p-3 sm:p-4 bg-card rounded-xl border border-border/50">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Hash className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   </div>
-                  <div>
-                    <div className="text-xs text-muted-foreground">Артикул</div>
-                    <div className="font-medium">{product.article}</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Weight className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <div className="text-xs text-muted-foreground">Вес</div>
-                    <div className="font-medium">{product.weight}</div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] sm:text-xs text-muted-foreground">Артикул</div>
+                    <div className="font-medium text-xs sm:text-base truncate">{product.article}</div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Ruler className="w-5 h-5 text-primary" />
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Weight className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   </div>
-                  <div>
-                    <div className="text-xs text-muted-foreground">Размер</div>
-                    <div className="font-medium text-sm">{product.size}</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Layers className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <div className="text-xs text-muted-foreground">Материал</div>
-                    <div className="font-medium text-sm">{product.materials}</div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] sm:text-xs text-muted-foreground">Вес</div>
+                    <div className="font-medium text-xs sm:text-base truncate">{product.weight}</div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 col-span-2 sm:col-span-1">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Package className="w-5 h-5 text-primary" />
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Ruler className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   </div>
-                  <div>
-                    <div className="text-xs text-muted-foreground">Наличие</div>
-                    <div className={`font-medium ${product.inStock ? "text-green-400" : "text-orange-400"}`}>
+                  <div className="min-w-0">
+                    <div className="text-[10px] sm:text-xs text-muted-foreground">Размер</div>
+                    <div className="font-medium text-xs sm:text-sm truncate">{product.size}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Layers className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] sm:text-xs text-muted-foreground">Материал</div>
+                    <div className="font-medium text-xs sm:text-sm truncate">{product.materials}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 sm:gap-3 col-span-2 sm:col-span-1">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Package className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] sm:text-xs text-muted-foreground">Наличие</div>
+                    <div className={`font-medium text-xs sm:text-base ${product.inStock ? "text-green-400" : "text-orange-400"}`}>
                       {product.inStock ? "В наличии" : "Под заказ"}
                     </div>
                   </div>
@@ -752,7 +752,7 @@ export default function Product() {
               {/* Description */}
               <div className="mb-6">
                 <h3 className="text-lg font-semibold mb-3">Описание</h3>
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed whitespace-pre-line break-words">
                   {product.description}
                 </p>
               </div>

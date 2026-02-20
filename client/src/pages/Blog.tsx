@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { Calendar, ArrowRight, Clock } from "lucide-react";
@@ -81,6 +82,12 @@ const staggerContainer = {
 };
 
 export default function Blog() {
+  const [selectedCategory, setSelectedCategory] = useState("Все");
+
+  const filteredPosts = selectedCategory === "Все"
+    ? blogPosts
+    : blogPosts.filter(post => post.category === selectedCategory);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -111,15 +118,16 @@ export default function Blog() {
             variants={fadeInUp}
             className="flex flex-wrap justify-center gap-2"
           >
-            {categories.map((category, index) => (
+            {categories.map((category) => (
               <Button
-                key={index}
-                variant={index === 0 ? "default" : "outline"}
+                key={category}
+                variant={selectedCategory === category ? "default" : "outline"}
                 className={`rounded-lg ${
-                  index === 0
+                  selectedCategory === category
                     ? "btn-gold"
                     : "border-border/50 hover:bg-primary/10 hover:border-primary/50"
                 }`}
+                onClick={() => setSelectedCategory(category)}
               >
                 {category}
               </Button>
@@ -135,7 +143,7 @@ export default function Blog() {
             variants={staggerContainer}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            {blogPosts.map((post) => (
+            {filteredPosts.map((post) => (
               <motion.article
                 key={post.id}
                 variants={fadeInUp}

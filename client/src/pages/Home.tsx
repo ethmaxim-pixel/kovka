@@ -136,7 +136,7 @@ export default function Home() {
       <Header />
       
       {/* Hero Section - Screen 1 */}
-      <section className="relative min-h-screen flex items-center pt-20 hero-metal-bg">
+      <section className="relative min-h-[auto] lg:min-h-screen flex items-center pt-24 pb-12 lg:pt-20 lg:pb-0 hero-metal-bg">
         {/* Metal pattern overlay */}
         <div className="absolute inset-0 z-0 opacity-5">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
@@ -183,10 +183,10 @@ export default function Home() {
               
               <motion.div
                 variants={fadeInUp}
-                className="flex flex-col sm:flex-row gap-4"
+                className="flex flex-col sm:flex-row gap-3 sm:gap-4"
               >
-                <Link href="/catalog">
-                  <Button size="lg" className="btn-gold rounded-lg text-base font-semibold px-8">
+                <Link href="/catalog" className="w-full sm:w-auto">
+                  <Button size="lg" className="btn-gold rounded-lg text-base font-semibold px-8 w-full sm:w-auto">
                     <Package className="w-5 h-5 mr-2" />
                     Перейти в каталог
                   </Button>
@@ -194,7 +194,7 @@ export default function Home() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="rounded-lg text-base font-semibold px-8 border-primary/50 hover:bg-primary/10"
+                  className="rounded-lg text-base font-semibold px-8 border-primary/50 hover:bg-primary/10 w-full sm:w-auto"
                   onClick={() => document.getElementById("contact-form")?.scrollIntoView({ behavior: "smooth" })}
                 >
                   <Phone className="w-5 h-5 mr-2" />
@@ -208,13 +208,13 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.9, x: 50 }}
               animate={{ opacity: 1, scale: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
-              className="hidden lg:flex justify-center items-center"
+              className="flex justify-center items-center"
             >
               <div className="relative">
                 <img
                   src="/images/hero-statue.png"
                   alt="Кованая скульптура"
-                  className="w-full max-w-lg h-auto object-contain drop-shadow-2xl"
+                  className="w-full max-w-[280px] lg:max-w-lg h-auto object-contain drop-shadow-2xl"
                 />
                 {/* Decorative glow effect */}
                 <div className="absolute inset-0 bg-gradient-radial from-primary/20 via-transparent to-transparent blur-3xl -z-10" />
