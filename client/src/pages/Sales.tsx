@@ -1,7 +1,5 @@
 import { motion } from "framer-motion";
-import { Tag, Clock, Percent, Gift, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
+import { Tag, Clock, Percent, Gift } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -185,38 +183,6 @@ export default function Sales() {
           </div>
         </section>
 
-        {/* Newsletter Section */}
-        <section className="py-20">
-          <div className="container">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeInUp}
-              className="max-w-3xl mx-auto p-8 md:p-12 rounded-2xl bg-gradient-to-br from-card to-card/50 border border-border/50 text-center"
-            >
-              <h2 className="text-2xl md:text-3xl font-bold mb-4 font-[family-name:var(--font-heading)]">
-                Не пропустите <span className="text-gold-gradient">выгодные предложения</span>
-              </h2>
-              <p className="text-muted-foreground mb-8">
-                Подпишитесь на рассылку и первыми узнавайте о новых акциях и скидках
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/catalog">
-                  <Button size="lg" className="btn-gold rounded-lg font-semibold px-8">
-                    Перейти в каталог
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </Link>
-                <Link href="/contacts">
-                  <Button size="lg" variant="outline" className="rounded-lg font-semibold px-8 border-primary/50 hover:bg-primary/10">
-                    Связаться с нами
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
-          </div>
-        </section>
       </main>
 
       <Footer />

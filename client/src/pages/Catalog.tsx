@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useSearch, Link } from "wouter";
 import { motion } from "framer-motion";
-import { Search, Filter, Grid, List, ShoppingCart, Eye, Heart, Plus, Minus, RefreshCw, ChevronDown } from "lucide-react";
+import { Search, Filter, Grid, List, ShoppingCart, Heart, Plus, Minus, RefreshCw, ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -182,14 +182,6 @@ function ProductCard({ product, viewMode }: { product: CatalogProduct; viewMode:
           alt={product.name}
           className="w-full h-full object-cover"
         />
-        {/* Stock Badge */}
-        <div className={`absolute top-1.5 left-1.5 sm:top-2 sm:left-2 px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium ${
-          product.inStock
-            ? "bg-green-500/20 text-green-400 border border-green-500/30"
-            : "bg-orange-500/20 text-orange-400 border border-orange-500/30"
-        }`}>
-          {product.inStock ? "В наличии" : "Под заказ"}
-        </div>
         {/* Favorite Button - always visible */}
         <button
           onClick={handleToggleFavorite}
@@ -202,15 +194,17 @@ function ProductCard({ product, viewMode }: { product: CatalogProduct; viewMode:
         >
           <Heart className={`w-4 h-4 ${isFavorite(product.id) ? "fill-current" : ""}`} />
         </button>
-        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-        <div className="absolute bottom-2 left-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button size="sm" className="flex-1 btn-gold rounded-lg text-xs">
-            <Eye className="w-3 h-3 mr-1" />
-            Подробнее
-          </Button>
-        </div>
       </div>
       <div className="p-2 sm:p-4">
+        {/* Stock Badge - moved out of image to avoid overlap on mobile */}
+        <div className={`inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium mb-1.5 ${
+          product.inStock
+            ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20"
+            : "bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20"
+        }`}>
+          {product.inStock ? <><Check className="w-3 h-3" /> В наличии</> : "Под заказ"}
+        </div>
+
         {/* Name - 1 line */}
         <h3 className="font-semibold text-xs sm:text-sm line-clamp-2 sm:line-clamp-1 font-[family-name:var(--font-heading)] group-hover:text-primary transition-colors mb-1">
           {product.name}
@@ -235,8 +229,8 @@ function ProductCard({ product, viewMode }: { product: CatalogProduct; viewMode:
           {product.weight !== "—" && <span>Вес: {product.weight}</span>}
         </div>
 
-        {/* Price */}
-        <div className="text-sm sm:text-lg font-bold text-gold-gradient mb-1.5 sm:mb-3">
+        {/* Price - large and visible */}
+        <div className="text-base sm:text-xl font-extrabold text-gold-gradient mb-1.5 sm:mb-3">
           {product.price.toLocaleString()} ₽
         </div>
 
@@ -259,22 +253,32 @@ function ProductCard({ product, viewMode }: { product: CatalogProduct; viewMode:
           </div>
           <Button
             size="sm"
-            className="flex-1 rounded-lg transition-all btn-gold text-sm h-9 px-3"
+            className={`flex-1 rounded-lg transition-all text-sm h-9 px-3 ${
+              isInCart(product.id) ? "bg-green-600 hover:bg-green-700 text-white" : "btn-gold"
+            }`}
             onClick={handleAddToCart}
           >
-            <ShoppingCart className="w-4 h-4 mr-1" />
-            В корзину
+            {isInCart(product.id) ? (
+              <><Check className="w-4 h-4 mr-1" /> В корзине</>
+            ) : (
+              <><ShoppingCart className="w-4 h-4 mr-1" /> В корзину</>
+            )}
           </Button>
         </div>
         {/* Mobile: compact cart button */}
         <div className="sm:hidden">
           <Button
             size="sm"
-            className="w-full rounded-lg transition-all btn-gold text-xs h-8"
+            className={`w-full rounded-lg transition-all text-xs h-8 ${
+              isInCart(product.id) ? "bg-green-600 hover:bg-green-700 text-white" : "btn-gold"
+            }`}
             onClick={handleAddToCart}
           >
-            <ShoppingCart className="w-3.5 h-3.5 mr-1" />
-            В корзину
+            {isInCart(product.id) ? (
+              <><Check className="w-3.5 h-3.5 mr-1" /> В корзине</>
+            ) : (
+              <><ShoppingCart className="w-3.5 h-3.5 mr-1" /> В корзину</>
+            )}
           </Button>
         </div>
       </div>
@@ -290,7 +294,11 @@ export default function Catalog() {
 
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | undefined>(initialSubcategory);
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(["Кованные элементы"]));
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(() => {
+    const initial = new Set(["Кованные элементы"]);
+    if (initialCategory !== "all") initial.add(initialCategory);
+    return initial;
+  });
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
@@ -508,7 +516,7 @@ export default function Catalog() {
                 variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
                 className={
                   viewMode === "grid"
-                    ? "grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4"
+                    ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4"
                     : "space-y-4"
                 }
               >

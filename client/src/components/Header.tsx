@@ -88,12 +88,12 @@ export default function Header() {
   // Cart Sheet Content (reusable)
   const CartSheetContent = () => (
     <>
-      <SheetHeader>
+      <SheetHeader className="px-6 pt-6">
         <SheetTitle className="text-foreground font-[family-name:var(--font-heading)]">
           Корзина ({cartCount})
         </SheetTitle>
       </SheetHeader>
-      <div className="mt-6 space-y-4 max-h-[60vh] overflow-y-auto">
+      <div className="mt-4 px-6 space-y-4 max-h-[60vh] overflow-y-auto">
         {cartItems.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <ShoppingCart className="w-12 h-12 mx-auto mb-4 opacity-50" />
@@ -132,7 +132,7 @@ export default function Header() {
         )}
       </div>
       {cartItems.length > 0 && (
-        <div className="mt-6 pt-4 border-t border-border">
+        <div className="mx-6 mt-6 pt-4 border-t border-border">
           <div className="flex justify-between items-center mb-4">
             <span className="text-muted-foreground">Итого:</span>
             <span className="text-xl font-bold text-gold-gradient">{totalPrice.toLocaleString()} ₽</span>
@@ -148,12 +148,12 @@ export default function Header() {
   // Favorites Sheet Content (reusable)
   const FavoritesSheetContent = () => (
     <>
-      <SheetHeader>
+      <SheetHeader className="px-6 pt-6">
         <SheetTitle className="text-foreground font-[family-name:var(--font-heading)]">
           Избранное ({favoritesCount})
         </SheetTitle>
       </SheetHeader>
-      <div className="mt-6 space-y-4 max-h-[70vh] overflow-y-auto">
+      <div className="mt-4 px-6 space-y-4 max-h-[70vh] overflow-y-auto">
         {favoriteItems.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Heart className="w-12 h-12 mx-auto mb-4 opacity-50" />

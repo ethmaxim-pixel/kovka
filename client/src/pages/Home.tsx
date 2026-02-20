@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import {
@@ -31,31 +31,6 @@ import { SEO } from "@/components/SEO";
  * Sections: Hero, Features, Categories, Price List, Projects, Quick Links, Contact Form, Map, Footer
  */
 
-// Categories data - 22 категории
-const categories = [
-  { id: "balyasiny", name: "Балясины", image: "/images/cat-balyasiny.png" },
-  { id: "venzelya", name: "Вензеля, кольца", image: "/images/cat-venzelya.png" },
-  { id: "vinograd", name: "Кованый виноград", image: "/images/cat-vinograd.png" },
-  { id: "vstavki", name: "Вставки в балясины", image: "/images/cat-vstavki.png" },
-  { id: "paneli", name: "Декоративные панели", image: "/images/cat-paneli.png" },
-  { id: "zaglushki", name: "Заглушки на столбы", image: "/images/cat-zaglushki.png" },
-  { id: "korzinki", name: "Корзинки", image: "/images/cat-korzinki.png" },
-  { id: "listya", name: "Листья", image: "/images/cat-listya.png" },
-  { id: "nakonechniki", name: "Наконечники", image: "/images/cat-nakonechniki.png" },
-  { id: "osnovaniya", name: "Основания балясин", image: "/images/cat-osnovaniya.png" },
-  { id: "kraski", name: "Краски, патина", image: "/images/cat-kraski.png" },
-  { id: "piki", name: "Пики", image: "/images/cat-piki.png" },
-  { id: "polusfery", name: "Полусферы", image: "/images/cat-polusfery.png" },
-  { id: "poruchni", name: "Поручни, окончания", image: "/images/cat-poruchni.png" },
-  { id: "rozy", name: "Розы, заклепки", image: "/images/cat-rozy.png" },
-  { id: "ruchki", name: "Ручки и петли", image: "/images/cat-ruchki.png" },
-  { id: "prokat", name: "Художественный прокат", image: "/images/cat-prokat.png" },
-  { id: "cvety", name: "Цветы, накладки", image: "/images/cat-cvety.png" },
-  { id: "shary", name: "Шары, сферы", image: "/images/cat-shary.png" },
-  { id: "exclusive", name: "Эксклюзивная ковка", image: "/images/cat-exclusive.png" },
-  { id: "kolpaki", name: "Колпаки и переходы", image: "/images/cat-kolpaki.png" },
-  { id: "zhivotnye", name: "Животные в ковке", image: "/images/cat-zhivotnye.png" },
-];
 
 // Projects data
 const projects = [
@@ -97,6 +72,33 @@ export default function Home() {
     consent: false
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedMainCategory, setSelectedMainCategory] = useState<string>("Все");
+
+  // Fetch category tree from DB
+  const { data: categoryTree } = trpc.catalog.categories.list.useQuery();
+
+  // Build tree: main categories with children
+  const tree = useMemo(() => {
+    if (!categoryTree) return [];
+    const roots = categoryTree.filter((c: any) => !c.parentId);
+    return roots.map((root: any) => ({
+      ...root,
+      children: categoryTree
+        .filter((c: any) => c.parentId === root.id)
+        .sort((a: any, b: any) => a.name.localeCompare(b.name, 'ru')),
+    }));
+  }, [categoryTree]);
+
+  // Get subcategories for selected main category
+  const displayedSubcategories = useMemo(() => {
+    if (selectedMainCategory === "Все") {
+      return tree.flatMap((root: any) =>
+        (root.children || []).map((sub: any) => ({ ...sub, parentName: root.name }))
+      );
+    }
+    const found = tree.find((c: any) => c.name === selectedMainCategory);
+    return (found?.children || []).map((sub: any) => ({ ...sub, parentName: found?.name }));
+  }, [tree, selectedMainCategory]);
 
   const submitContactMutation = trpc.contact.submit.useMutation({
     onSuccess: () => {
@@ -284,7 +286,7 @@ export default function Home() {
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeInUp}
-            className="text-center mb-12"
+            className="text-center mb-8"
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-4 font-[family-name:var(--font-heading)]">
               Выберите <span className="text-gold-gradient">кованые элементы</span>
@@ -292,6 +294,42 @@ export default function Home() {
             </h2>
           </motion.div>
 
+          {/* Category tabs */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+            className="flex flex-wrap justify-center gap-2 mb-10"
+          >
+            <Button
+              variant={selectedMainCategory === "Все" ? "default" : "outline"}
+              className={`rounded-lg ${
+                selectedMainCategory === "Все"
+                  ? "btn-gold"
+                  : "border-border/50 hover:bg-primary/10 hover:border-primary/50"
+              }`}
+              onClick={() => setSelectedMainCategory("Все")}
+            >
+              Все
+            </Button>
+            {tree.map((mainCat: any) => (
+              <Button
+                key={mainCat.id}
+                variant={selectedMainCategory === mainCat.name ? "default" : "outline"}
+                className={`rounded-lg ${
+                  selectedMainCategory === mainCat.name
+                    ? "btn-gold"
+                    : "border-border/50 hover:bg-primary/10 hover:border-primary/50"
+                }`}
+                onClick={() => setSelectedMainCategory(mainCat.name)}
+              >
+                {mainCat.name}
+              </Button>
+            ))}
+          </motion.div>
+
+          {/* Subcategory cards */}
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -299,22 +337,28 @@ export default function Home() {
             variants={staggerContainer}
             className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6"
           >
-            {categories.map((category) => (
-              <motion.div key={category.id} variants={fadeInUp}>
+            {displayedSubcategories.map((sub: any) => (
+              <motion.div key={sub.id} variants={fadeInUp}>
                 <Link
-                  href={`/catalog?category=${category.id}`}
+                  href={`/catalog?category=${encodeURIComponent(sub.parentName)}&subcategory=${encodeURIComponent(sub.name)}`}
                   className="block group"
                 >
-                  <div className="relative aspect-square rounded-xl overflow-hidden card-hover">
-                    <img
-                      src={category.image}
-                      alt={category.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
+                  <div className="relative aspect-square rounded-xl overflow-hidden card-hover bg-card border border-border/50">
+                    {sub.image ? (
+                      <img
+                        src={sub.image}
+                        alt={sub.name}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-primary/5 to-primary/15 flex items-center justify-center">
+                        <Package className="w-10 h-10 text-primary/40" />
+                      </div>
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-4">
-                      <h3 className="text-sm md:text-base font-semibold text-foreground font-[family-name:var(--font-heading)]">
-                        {category.name}
+                    <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4">
+                      <h3 className="text-xs md:text-sm font-semibold text-foreground font-[family-name:var(--font-heading)]">
+                        {sub.name}
                       </h3>
                     </div>
                     <div className="absolute inset-0 border border-primary/0 group-hover:border-primary/50 rounded-xl transition-colors" />
@@ -323,6 +367,12 @@ export default function Home() {
               </motion.div>
             ))}
           </motion.div>
+
+          {displayedSubcategories.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground">
+              Загрузка категорий...
+            </div>
+          )}
 
           <motion.div
             initial="hidden"

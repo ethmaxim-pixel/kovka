@@ -757,18 +757,20 @@ export default function Product() {
                 </p>
               </div>
 
-              {/* Features */}
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Особенности</h3>
-                <ul className="space-y-2">
-                  {product.features.map((feature, index) => (
-                    <li key={index} className="flex items-center gap-2 text-muted-foreground">
-                      <Check className="w-4 h-4 text-primary" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              {/* Features - hidden when empty */}
+              {product.features.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Особенности</h3>
+                  <ul className="space-y-2">
+                    {product.features.map((feature, index) => (
+                      <li key={index} className="flex items-center gap-2 text-muted-foreground">
+                        <Check className="w-4 h-4 text-primary" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </motion.div>
           </div>
         </div>
