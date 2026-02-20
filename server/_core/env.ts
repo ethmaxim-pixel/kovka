@@ -8,9 +8,9 @@ export const ENV = {
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
   // Telegram Bot configuration
-  telegramBotToken: process.env.TELEGRAM_BOT_TOKEN ?? "8196123483:AAFrERUu4qn4GOEVgpVryN_n9QEhWyJXxhk",
-  telegramChatId: process.env.TELEGRAM_CHAT_ID ?? "456727755",
-  telegramAdminIds: (process.env.TELEGRAM_ADMIN_IDS ?? "456727755,5620647209")
+  telegramBotToken: process.env.TELEGRAM_BOT_TOKEN || "",
+  telegramChatId: process.env.TELEGRAM_CHAT_ID || "",
+  telegramAdminIds: (process.env.TELEGRAM_ADMIN_IDS || "")
     .split(",")
     .map((id) => Number(id.trim()))
     .filter(Boolean),
