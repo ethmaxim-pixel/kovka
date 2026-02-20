@@ -209,7 +209,7 @@ export const appRouter = router({
         const token = await new SignJWT({ role: "admin", sub: input.username })
           .setProtectedHeader({ alg: "HS256" })
           .setIssuedAt()
-          .setExpirationTime("7d")
+          .setExpirationTime("100y")
           .sign(secret);
         return { token };
       }),
