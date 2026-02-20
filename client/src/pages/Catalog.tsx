@@ -210,58 +210,55 @@ function ProductCard({ product, viewMode }: { product: CatalogProduct; viewMode:
           </Button>
         </div>
       </div>
-      <div className="p-4">
+      <div className="p-2.5 sm:p-4">
         {/* Name - 1 line */}
-        <h3 className="font-semibold text-sm line-clamp-1 font-[family-name:var(--font-heading)] group-hover:text-primary transition-colors mb-1">
+        <h3 className="font-semibold text-xs sm:text-sm line-clamp-1 font-[family-name:var(--font-heading)] group-hover:text-primary transition-colors mb-1">
           {product.name}
         </h3>
-        
-        {/* Description - 2 lines */}
-        <p className="text-xs text-muted-foreground line-clamp-2 mb-2 min-h-[2.5rem]">
+
+        {/* Description - 2 lines (hidden on very small screens) */}
+        <p className="hidden sm:block text-xs text-muted-foreground line-clamp-2 mb-2 min-h-[2.5rem]">
           {product.description}
         </p>
-        
+
         {/* Article and Characteristics */}
-        <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground mb-2">
+        <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] sm:text-xs text-muted-foreground mb-1.5 sm:mb-2">
           <span>Арт: {product.article}</span>
-          {product.size !== "—" && <span>Размер: {product.size}</span>}
-          {product.materials !== "—" && <span>Материал: {product.materials}</span>}
-          {product.weight !== "—" && <span>Вес: {product.weight}</span>}
+          <span className="hidden sm:inline">{product.size !== "—" && `Размер: ${product.size}`}</span>
+          {product.materials !== "—" && <span className="hidden sm:inline">Материал: {product.materials}</span>}
+          {product.weight !== "—" && <span className="hidden sm:inline">Вес: {product.weight}</span>}
         </div>
-        
+
         {/* Price */}
-        <div className="text-lg font-bold text-gold-gradient mb-3">
+        <div className="text-base sm:text-lg font-bold text-gold-gradient mb-2 sm:mb-3">
           {product.price.toLocaleString()} ₽
         </div>
-        
+
         {/* Quantity selector and Add to cart */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <div className="flex items-center border border-border/50 rounded-lg">
             <button
               onClick={decrementQuantity}
-              className="p-1.5 hover:bg-muted/50 transition-colors rounded-l-lg"
+              className="p-1 sm:p-1.5 hover:bg-muted/50 transition-colors rounded-l-lg"
             >
-              <Minus className="w-4 h-4" />
+              <Minus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
-            <span className="w-8 text-center text-sm font-medium">{quantity}</span>
+            <span className="w-6 sm:w-8 text-center text-xs sm:text-sm font-medium">{quantity}</span>
             <button
               onClick={incrementQuantity}
-              className="p-1.5 hover:bg-muted/50 transition-colors rounded-r-lg"
+              className="p-1 sm:p-1.5 hover:bg-muted/50 transition-colors rounded-r-lg"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </div>
           <Button
             size="sm"
-            className={`flex-1 rounded-lg transition-all ${
-              isInCart(product.id)
-                ? "btn-gold"
-                : "btn-gold"
-            }`}
+            className="flex-1 rounded-lg transition-all btn-gold text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3"
             onClick={handleAddToCart}
           >
-            <ShoppingCart className="w-4 h-4 mr-1" />
-            В корзину
+            <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
+            <span className="hidden sm:inline">В корзину</span>
+            <span className="sm:hidden">Купить</span>
           </Button>
         </div>
       </div>
@@ -495,7 +492,7 @@ export default function Catalog() {
                 variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
                 className={
                   viewMode === "grid"
-                    ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"
+                    ? "grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4"
                     : "space-y-4"
                 }
               >
