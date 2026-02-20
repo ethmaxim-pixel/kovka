@@ -14,7 +14,6 @@ import Partners from "./pages/Partners";
 import Delivery from "./pages/Delivery";
 import Contacts from "./pages/Contacts";
 import Blog from "./pages/Blog";
-import About from "./pages/About";
 import Sales from "./pages/Sales";
 import Product from "./pages/Product";
 import ScrollToTop from "./components/ScrollToTop";
@@ -32,7 +31,6 @@ function Router() {
       <Route path="/delivery" component={Delivery} />
       <Route path="/contacts" component={Contacts} />
       <Route path="/blog" component={Blog} />
-      <Route path="/about" component={About} />
       <Route path="/sales" component={Sales} />
       <Route path="/product/:id" component={Product} />
       <Route path="/cart" component={Cart} />
@@ -47,7 +45,7 @@ function Router() {
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider defaultTheme="dark" switchable={true}>
+      <ThemeProvider defaultTheme="light" switchable={true}>
         <TooltipProvider>
           <CartProvider>
             <FavoritesProvider>

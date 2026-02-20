@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import PhoneMaskedInput from "@/components/PhoneMaskedInput";
 
 /*
  * Contacts Page - Kovka Dvorik
@@ -190,11 +191,9 @@ export default function Contacts() {
                     />
                   </div>
                   <div>
-                    <Input
-                      type="tel"
-                      placeholder="+7 (___) ___-__-__"
+                    <PhoneMaskedInput
                       value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      onChange={(phone) => setFormData({ ...formData, phone })}
                       className="h-12 bg-background border-border/50 rounded-lg"
                       required
                     />
@@ -252,7 +251,7 @@ export default function Contacts() {
           </div>
         </section>
 
-        {/* Map Section */}
+        {/* Yandex Map */}
         <section className="container mt-16">
           <motion.div
             initial="hidden"
@@ -261,10 +260,11 @@ export default function Contacts() {
             variants={fadeInUp}
             className="aspect-video rounded-2xl overflow-hidden bg-card border border-border/50"
           >
-            <img
-              src="/images/craftsman-work.jpg"
-              alt="Наша мастерская"
-              className="w-full h-full object-cover"
+            <iframe
+              src="https://yandex.ru/map-widget/v1/?ll=39.3078%2C48.5734&z=15&pt=39.3078%2C48.5734%2Cpm2rdm"
+              className="w-full h-full border-0"
+              allowFullScreen
+              title="Ковка в Дворик на карте"
             />
           </motion.div>
         </section>

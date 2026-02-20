@@ -10,44 +10,15 @@ import Footer from "@/components/Footer";
  * Features: Current promotions, discounts, special offers
  */
 
-const promotions = [
-  {
-    id: 1,
-    title: "Скидка 15% на балясины",
-    description: "При заказе от 50 штук получите скидку 15% на все виды балясин",
-    image: "/images/category-balusters.jpg",
-    discount: "15%",
-    validUntil: "31 января 2025",
-    code: "BALUSTER15"
-  },
-  {
-    id: 2,
-    title: "Бесплатная доставка",
-    description: "Бесплатная доставка по России при заказе от 30 000 ₽",
-    image: "/images/forged-elements-display.jpg",
-    discount: "Бесплатно",
-    validUntil: "Постоянная акция",
-    code: null
-  },
-  {
-    id: 3,
-    title: "Подарок при первом заказе",
-    description: "Получите набор декоративных элементов в подарок при первом заказе от 10 000 ₽",
-    image: "/images/category-leaves.jpg",
-    discount: "Подарок",
-    validUntil: "15 февраля 2025",
-    code: "FIRSTORDER"
-  },
-  {
-    id: 4,
-    title: "Распродажа волют",
-    description: "Скидки до 25% на волюты и завитки из прошлогодней коллекции",
-    image: "/images/category-scrolls.jpg",
-    discount: "до 25%",
-    validUntil: "Пока есть в наличии",
-    code: null
-  },
-];
+const promotions: Array<{
+  id: number;
+  title: string;
+  description: string;
+  image: string;
+  discount: string;
+  validUntil: string;
+  code: string | null;
+}> = [];
 
 const benefits = [
   {
@@ -143,54 +114,74 @@ export default function Sales() {
               </h2>
             </motion.div>
 
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={staggerContainer}
-              className="grid grid-cols-1 md:grid-cols-2 gap-6"
-            >
-              {promotions.map((promo) => (
-                <motion.div
-                  key={promo.id}
-                  variants={fadeInUp}
-                  className="group rounded-2xl bg-card border border-border/50 overflow-hidden card-hover"
-                >
-                  <div className="relative aspect-video overflow-hidden">
-                    <img
-                      src={promo.image}
-                      alt={promo.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-                    <div className="absolute top-4 left-4">
-                      <span className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-bold text-lg">
-                        {promo.discount}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold mb-2 font-[family-name:var(--font-heading)]">
-                      {promo.title}
-                    </h3>
-                    <p className="text-muted-foreground mb-4">
-                      {promo.description}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Clock className="w-4 h-4" />
-                        <span>{promo.validUntil}</span>
+            {promotions.length > 0 ? (
+              <motion.div
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={staggerContainer}
+                className="grid grid-cols-1 md:grid-cols-2 gap-6"
+              >
+                {promotions.map((promo) => (
+                  <motion.div
+                    key={promo.id}
+                    variants={fadeInUp}
+                    className="group rounded-2xl bg-card border border-border/50 overflow-hidden card-hover"
+                  >
+                    <div className="relative aspect-video overflow-hidden">
+                      <img
+                        src={promo.image}
+                        alt={promo.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+                      <div className="absolute top-4 left-4">
+                        <span className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-bold text-lg">
+                          {promo.discount}
+                        </span>
                       </div>
-                      {promo.code && (
-                        <div className="px-3 py-1 rounded-lg bg-primary/10 border border-primary/30">
-                          <span className="text-sm font-mono text-primary">{promo.code}</span>
-                        </div>
-                      )}
                     </div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
+                    <div className="p-6">
+                      <h3 className="text-xl font-semibold mb-2 font-[family-name:var(--font-heading)]">
+                        {promo.title}
+                      </h3>
+                      <p className="text-muted-foreground mb-4">
+                        {promo.description}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Clock className="w-4 h-4" />
+                          <span>{promo.validUntil}</span>
+                        </div>
+                        {promo.code && (
+                          <div className="px-3 py-1 rounded-lg bg-primary/10 border border-primary/30">
+                            <span className="text-sm font-mono text-primary">{promo.code}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeInUp}
+                className="text-center py-16"
+              >
+                <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
+                  <Tag className="w-10 h-10 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-3 font-[family-name:var(--font-heading)]">
+                  Нет текущих акций
+                </h3>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  Следите за обновлениями! Мы регулярно запускаем выгодные предложения и скидки на кованые элементы.
+                </p>
+              </motion.div>
+            )}
           </div>
         </section>
 

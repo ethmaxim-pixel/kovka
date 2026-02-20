@@ -1,8 +1,11 @@
+import { useState } from "react";
+import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { Percent, Truck, Clock, Users, FileText, Phone, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import CallbackDialog from "@/components/CallbackDialog";
 
 /*
  * Partners Page - Kovka Dvorik
@@ -52,6 +55,8 @@ const staggerContainer = {
 };
 
 export default function Partners() {
+  const [callbackOpen, setCallbackOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -72,14 +77,16 @@ export default function Partners() {
               Выгодные условия сотрудничества для кузнечных мастерских, строительных компаний и дизайнеров интерьеров
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="btn-gold rounded-lg font-semibold px-8">
+              <Button size="lg" className="btn-gold rounded-lg font-semibold px-8" onClick={() => setCallbackOpen(true)}>
                 <FileText className="w-5 h-5 mr-2" />
                 Стать партнером
               </Button>
-              <Button size="lg" variant="outline" className="rounded-lg font-semibold px-8 border-primary/50 hover:bg-primary/10">
-                <Phone className="w-5 h-5 mr-2" />
-                Связаться с нами
-              </Button>
+              <Link href="/contacts">
+                <Button size="lg" variant="outline" className="rounded-lg font-semibold px-8 border-primary/50 hover:bg-primary/10">
+                  <Phone className="w-5 h-5 mr-2" />
+                  Связаться с нами
+                </Button>
+              </Link>
             </div>
           </motion.div>
         </section>
@@ -233,7 +240,7 @@ export default function Partners() {
                 Свяжитесь с нами, и мы подберем оптимальные условия для вашего бизнеса
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="btn-gold rounded-lg font-semibold px-8">
+                <Button size="lg" className="btn-gold rounded-lg font-semibold px-8" onClick={() => setCallbackOpen(true)}>
                   <CheckCircle className="w-5 h-5 mr-2" />
                   Оставить заявку
                 </Button>
@@ -249,6 +256,7 @@ export default function Partners() {
         </section>
       </main>
 
+      <CallbackDialog open={callbackOpen} onOpenChange={setCallbackOpen} />
       <Footer />
     </div>
   );

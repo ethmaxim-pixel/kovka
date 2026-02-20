@@ -1,18 +1,17 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { 
-  FileText, 
-  Phone, 
-  Package, 
-  Wrench, 
-  Shield, 
-  Truck, 
+import {
+  FileText,
+  Phone,
+  Package,
+  Wrench,
+  Shield,
+  Truck,
   ArrowRight,
-  Download,
   MapPin,
   Clock,
-  CheckCircle,
+  Mail,
   Send
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,7 +21,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { MapView } from "@/components/Map";
+import PhoneMaskedInput from "@/components/PhoneMaskedInput";
 import { trpc } from "@/lib/trpc";
 import { SEO } from "@/components/SEO";
 
@@ -186,14 +185,17 @@ export default function Home() {
                 variants={fadeInUp}
                 className="flex flex-col sm:flex-row gap-4"
               >
-                <Button size="lg" className="btn-gold rounded-lg text-base font-semibold px-8">
-                  <FileText className="w-5 h-5 mr-2" />
-                  Скачать прайс
-                </Button>
+                <Link href="/catalog">
+                  <Button size="lg" className="btn-gold rounded-lg text-base font-semibold px-8">
+                    <Package className="w-5 h-5 mr-2" />
+                    Перейти в каталог
+                  </Button>
+                </Link>
                 <Button
                   size="lg"
                   variant="outline"
                   className="rounded-lg text-base font-semibold px-8 border-primary/50 hover:bg-primary/10"
+                  onClick={() => document.getElementById("contact-form")?.scrollIntoView({ behavior: "smooth" })}
                 >
                   <Phone className="w-5 h-5 mr-2" />
                   Связаться
@@ -295,7 +297,7 @@ export default function Home() {
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={staggerContainer}
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6"
           >
             {categories.map((category) => (
               <motion.div key={category.id} variants={fadeInUp}>
@@ -335,48 +337,6 @@ export default function Home() {
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Price List Section - Screen 4 */}
-      <section className="py-20 lg:py-28">
-        <div className="container">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeInUp}
-            className="max-w-3xl mx-auto"
-          >
-            <div className="relative p-8 md:p-12 rounded-2xl bg-gradient-to-br from-card to-card/50 border border-border/50 overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
-              
-              <div className="relative flex flex-col md:flex-row items-center gap-8">
-                <div className="w-32 h-40 bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg flex items-center justify-center shrink-0">
-                  <FileText className="w-16 h-16 text-primary" />
-                </div>
-                
-                <div className="text-center md:text-left">
-                  <h2 className="text-2xl md:text-3xl font-bold mb-3 font-[family-name:var(--font-heading)]">
-                    Скачать <span className="text-gold-gradient">прайс-лист</span>
-                  </h2>
-                  <p className="text-muted-foreground mb-6">
-                    Полный каталог с ценами на все кованые элементы. Доступен в форматах PDF и Excel.
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
-                    <Button className="btn-gold rounded-lg font-medium">
-                      <Download className="w-4 h-4 mr-2" />
-                      PDF-файл
-                    </Button>
-                    <Button variant="outline" className="rounded-lg font-medium border-primary/50 hover:bg-primary/10">
-                      <Download className="w-4 h-4 mr-2" />
-                      Таблица XLS
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
           </motion.div>
         </div>
       </section>
@@ -480,7 +440,7 @@ export default function Home() {
       </section>
 
       {/* Contact Form Section - Screen 7 */}
-      <section className="py-20 lg:py-28 bg-card/50">
+      <section id="contact-form" className="py-20 lg:py-28 bg-card/50">
         <div className="container">
           <motion.div
             initial="hidden"
@@ -510,11 +470,9 @@ export default function Home() {
                   />
                 </div>
                 <div>
-                  <Input
-                    type="tel"
-                    placeholder="+7 (___) ___-__-__"
+                  <PhoneMaskedInput
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    onChange={(phone) => setFormData({ ...formData, phone })}
                     className="h-12 bg-background border-border/50 rounded-lg"
                     required
                   />
@@ -562,7 +520,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Map Section - Screen 8 */}
+      {/* Map & Contacts Section - Screen 8 */}
       <section className="py-20 lg:py-28">
         <div className="container">
           <motion.div
@@ -570,55 +528,66 @@ export default function Home() {
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeInUp}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center"
+            className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start"
           >
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold mb-6 font-[family-name:var(--font-heading)]">
-                Находимся по адресу:
+              <h2 className="text-2xl md:text-3xl font-bold mb-8 font-[family-name:var(--font-heading)]">
+                Контактная <span className="text-gold-gradient">информация</span>
               </h2>
-              <div className="space-y-4 mb-8">
-                <div className="flex items-center gap-3">
-                  <MapPin className="w-5 h-5 text-primary shrink-0" />
-                  <span className="text-lg">г. Луганск, ул. Лутугинская</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Clock className="w-5 h-5 text-primary shrink-0" />
+              <div className="space-y-4">
+                <div className="flex items-start gap-4 p-4 rounded-xl bg-card border border-border/50">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Phone className="w-6 h-6 text-primary" />
+                  </div>
                   <div>
-                    <p>Пн-Пт: 9:00-18:00</p>
+                    <h3 className="font-semibold mb-1">Телефон</h3>
+                    <a href="tel:+79591110000" className="text-lg text-gold-gradient hover:underline">
+                      +7 (959) 111-00-00
+                    </a>
+                    <p className="text-sm text-muted-foreground mt-1">Звоните в рабочее время</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4 p-4 rounded-xl bg-card border border-border/50">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Mail className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-1">Email</h3>
+                    <a href="mailto:info@kovka-dvorik.ru" className="text-lg text-gold-gradient hover:underline">
+                      info@kovka-dvorik.ru
+                    </a>
+                    <p className="text-sm text-muted-foreground mt-1">Ответим в течение 24 часов</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4 p-4 rounded-xl bg-card border border-border/50">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <MapPin className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-1">Адрес</h3>
+                    <p className="text-lg">г. Луганск, ул. Лутугинская</p>
+                    <p className="text-sm text-muted-foreground mt-1">Офис и склад</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4 p-4 rounded-xl bg-card border border-border/50">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Clock className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-1">Режим работы</h3>
+                    <p className="text-lg">Пн-Пт: 9:00-18:00</p>
                     <p className="text-muted-foreground">Сб-Вс: 10:00-16:00</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Phone className="w-5 h-5 text-primary shrink-0" />
-                  <a href="tel:+79590001111" className="text-lg hover:text-primary transition-colors">
-                    +7 (959) 000-11-11
-                  </a>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-card border border-border/50">
-                  <CheckCircle className="w-4 h-4 text-primary" />
-                  <span className="text-sm">5 мин. от центра</span>
-                </div>
-                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-card border border-border/50">
-                  <CheckCircle className="w-4 h-4 text-primary" />
-                  <span className="text-sm">350 м. от остановки</span>
-                </div>
               </div>
             </div>
-            
+
             <div className="aspect-video lg:aspect-square rounded-xl overflow-hidden bg-card border border-border/50">
-              <MapView
-                className="w-full h-full"
-                initialCenter={{ lat: 48.5734, lng: 39.3078 }}
-                initialZoom={15}
-                onMapReady={(map) => {
-                  new window.google.maps.marker.AdvancedMarkerElement({
-                    map,
-                    position: { lat: 48.5734, lng: 39.3078 },
-                    title: "Ковка в Дворик",
-                  });
-                }}
+              <iframe
+                src="https://yandex.ru/map-widget/v1/?ll=39.3078%2C48.5734&z=15&pt=39.3078%2C48.5734%2Cpm2rdm"
+                className="w-full h-full border-0"
+                allowFullScreen
+                title="Ковка в Дворик на карте"
               />
             </div>
           </motion.div>

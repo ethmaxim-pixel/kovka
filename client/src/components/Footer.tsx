@@ -15,7 +15,6 @@ const footerLinks = {
     { href: "/catalog?category=listya", label: "Листья" },
   ],
   company: [
-    { href: "/about", label: "О компании" },
     { href: "/partners", label: "Партнерам" },
     { href: "/delivery", label: "Доставка и оплата" },
     { href: "/contacts", label: "Контакты" },
@@ -29,7 +28,7 @@ const footerLinks = {
 
 export default function Footer() {
   return (
-    <footer className="bg-[oklch(0.12_0.01_60)] border-t border-border/50">
+    <footer className="bg-card border-t border-border/50">
       <div className="container py-12 lg:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand */}

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, X, Phone, FileText, ShoppingCart, Heart, Trash2, Sun, Moon, PhoneCall, ChevronDown } from "lucide-react";
+import { Menu, X, Phone, Package, ShoppingCart, Heart, Trash2, Sun, Moon, PhoneCall, ChevronDown } from "lucide-react";
+import CallbackDialog from "./CallbackDialog";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/contexts/CartContext";
@@ -37,7 +38,6 @@ const mainNavLinks = [
 // Secondary navigation links (in dropdown on smaller screens)
 const moreNavLinks = [
   { href: "/partners", label: "Партнерам" },
-  { href: "/about", label: "О нас" },
   { href: "/blog", label: "Блог" },
   { href: "/sales", label: "Акции" },
 ];
@@ -78,6 +78,7 @@ const socialLinks = [
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [callbackOpen, setCallbackOpen] = useState(false);
   const [location] = useLocation();
 
   const { items: cartItems, totalItems: cartCount, totalPrice, removeItem: removeCartItem, updateQuantity } = useCart();
@@ -343,19 +344,22 @@ export default function Header() {
                   variant="outline"
                   size="sm"
                   className="rounded-md font-medium border-primary/50 hover:bg-primary/10 text-xs h-8 px-3"
+                  onClick={() => setCallbackOpen(true)}
                 >
                   <PhoneCall className="w-3.5 h-3.5 mr-1.5" />
                   <span className="hidden xl:inline">Обратный звонок</span>
                   <span className="xl:hidden">Звонок</span>
                 </Button>
-                <Button
-                  size="sm"
-                  className="btn-gold rounded-md font-medium text-xs h-8 px-3"
-                >
-                  <FileText className="w-3.5 h-3.5 mr-1.5" />
-                  <span className="hidden xl:inline">Скачать прайс</span>
-                  <span className="xl:hidden">Прайс</span>
-                </Button>
+                <Link href="/catalog">
+                  <Button
+                    size="sm"
+                    className="btn-gold rounded-md font-medium text-xs h-8 px-3"
+                  >
+                    <Package className="w-3.5 h-3.5 mr-1.5" />
+                    <span className="hidden xl:inline">Перейти в каталог</span>
+                    <span className="xl:hidden">Каталог</span>
+                  </Button>
+                </Link>
               </div>
 
               {/* Mobile Menu Button */}
@@ -431,23 +435,27 @@ export default function Header() {
                     variant="outline"
                     size="sm"
                     className="rounded-lg font-medium border-primary/50 hover:bg-primary/10 h-10"
+                    onClick={() => { setIsMenuOpen(false); setCallbackOpen(true); }}
                   >
                     <PhoneCall className="w-4 h-4 mr-1.5" />
                     Звонок
                   </Button>
-                  <Button
-                    size="sm"
-                    className="btn-gold rounded-lg font-medium h-10"
-                  >
-                    <FileText className="w-4 h-4 mr-1.5" />
-                    Прайс
-                  </Button>
+                  <Link href="/catalog" onClick={() => setIsMenuOpen(false)}>
+                    <Button
+                      size="sm"
+                      className="btn-gold rounded-lg font-medium h-10 w-full"
+                    >
+                      <Package className="w-4 h-4 mr-1.5" />
+                      Каталог
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </nav>
           </motion.div>
         )}
       </AnimatePresence>
+      <CallbackDialog open={callbackOpen} onOpenChange={setCallbackOpen} />
     </header>
   );
 }
