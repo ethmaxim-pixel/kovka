@@ -582,25 +582,6 @@ export default function Product() {
                 />
               </div>
               
-              {/* Stock Badge */}
-              <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-sm font-medium ${
-                product.inStock 
-                  ? "bg-green-500/20 text-green-400 border border-green-500/30" 
-                  : "bg-orange-500/20 text-orange-400 border border-orange-500/30"
-              }`}>
-                {product.inStock ? (
-                  <span className="flex items-center gap-1">
-                    <Check className="w-3 h-3" />
-                    В наличии
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    Под заказ
-                  </span>
-                )}
-              </div>
-
               {/* Action Buttons */}
               <div className="absolute top-4 right-4 flex flex-col gap-2">
                 <button

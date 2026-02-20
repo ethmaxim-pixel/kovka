@@ -32,6 +32,73 @@ import { SEO } from "@/components/SEO";
  */
 
 
+// Subcategory name → image mapping (fallback when DB has no image)
+const subcategoryImageMap: Record<string, string> = {
+  "Балясины": "/images/cat-balyasiny.png",
+  "Вензеля и кольца": "/images/cat-venzelya.png",
+  "Вензеля": "/images/cat-venzelya.png",
+  "Кольца": "/images/cat-venzelya.png",
+  "Виноград": "/images/cat-vinograd.png",
+  "Кованый виноград": "/images/cat-vinograd.png",
+  "Декоративные панели": "/images/cat-paneli.png",
+  "Панели": "/images/cat-paneli.png",
+  "Цветы": "/images/cat-cvety.png",
+  "Цветы, накладки": "/images/cat-cvety.png",
+  "Накладки": "/images/cat-cvety.png",
+  "Пики": "/images/cat-piki.png",
+  "Корзинки": "/images/cat-korzinki.png",
+  "Листья": "/images/cat-listya.png",
+  "Наконечники": "/images/cat-nakonechniki.png",
+  "Основания балясин": "/images/cat-osnovaniya.png",
+  "Основания": "/images/cat-osnovaniya.png",
+  "Краски, патина": "/images/cat-kraski.png",
+  "Краски": "/images/cat-kraski.png",
+  "Патина": "/images/cat-kraski.png",
+  "Полусферы": "/images/cat-polusfery.png",
+  "Поручни": "/images/cat-poruchni.png",
+  "Поручни, окончания": "/images/cat-poruchni.png",
+  "Окончания": "/images/cat-poruchni.png",
+  "Розы": "/images/cat-rozy.png",
+  "Розы, заклепки": "/images/cat-rozy.png",
+  "Заклепки": "/images/cat-rozy.png",
+  "Ручки и петли": "/images/cat-ruchki.png",
+  "Ручки": "/images/cat-ruchki.png",
+  "Петли": "/images/cat-ruchki.png",
+  "Шары": "/images/cat-shary.png",
+  "Шары, сферы": "/images/cat-shary.png",
+  "Сферы": "/images/cat-shary.png",
+  "Эксклюзивная ковка": "/images/cat-exclusive.png",
+  "Эксклюзив": "/images/cat-exclusive.png",
+  "Колпаки и переходы": "/images/cat-kolpaki.png",
+  "Колпаки": "/images/cat-kolpaki.png",
+  "Переходы": "/images/cat-kolpaki.png",
+  "Животные в ковке": "/images/cat-zhivotnye.png",
+  "Животные": "/images/cat-zhivotnye.png",
+  "Вставки в балясины": "/images/cat-vstavki.png",
+  "Вставки": "/images/cat-vstavki.png",
+  "Заглушки на столбы": "/images/cat-zaglushki.png",
+  "Заглушки": "/images/cat-zaglushki.png",
+  "Пластиковые заглушки": "/images/cat-zaglushki.png",
+  "Декоративные элементы": "/images/cat-paneli.png",
+  "Цифры": "/images/cat-nakonechniki.png",
+  "Ящики почтовые": "/images/cat-ruchki.png",
+  "Художественный прокат": "/images/cat-prokat.png",
+  "Прокат": "/images/cat-prokat.png",
+  "Профильная труба": "/images/cat-prokat.png",
+  "Металлопрокат": "/images/cat-prokat.png",
+};
+
+function getSubcategoryImage(name: string): string {
+  if (subcategoryImageMap[name]) return subcategoryImageMap[name];
+  // Fuzzy match: check if any key is contained in the name or vice versa
+  for (const [key, value] of Object.entries(subcategoryImageMap)) {
+    if (name.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(name.toLowerCase())) {
+      return value;
+    }
+  }
+  return "";
+}
+
 // Projects data
 const projects = [
   { id: 1, category: "Скамейки", image: "/images/bench-example.jpg", description: "Образцы применения кованых элементов" },
@@ -331,9 +398,9 @@ export default function Home() {
 
           {/* Subcategory cards */}
           <motion.div
+            key={selectedMainCategory}
             initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
+            animate="visible"
             variants={staggerContainer}
             className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6"
           >
@@ -344,9 +411,9 @@ export default function Home() {
                   className="block group"
                 >
                   <div className="relative aspect-square rounded-xl overflow-hidden card-hover bg-card border border-border/50">
-                    {sub.image ? (
+                    {(sub.image || getSubcategoryImage(sub.name)) ? (
                       <img
-                        src={sub.image}
+                        src={sub.image || getSubcategoryImage(sub.name)}
                         alt={sub.name}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />

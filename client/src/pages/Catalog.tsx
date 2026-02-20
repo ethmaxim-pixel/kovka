@@ -44,12 +44,17 @@ type CatalogProduct = {
 // Product Card Component with quantity selector
 function ProductCard({ product, viewMode }: { product: CatalogProduct; viewMode: "grid" | "list" }) {
   const [quantity, setQuantity] = useState(1);
-  const { addItem: addToCart, isInCart } = useCart();
+  const { addItem: addToCart, removeItem: removeFromCart, isInCart } = useCart();
   const { toggleItem: toggleFavorite, isFavorite } = useFavorites();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isInCart(product.id)) {
+      removeFromCart(product.id);
+      toast.info(`${product.name} убран из корзины`);
+      return;
+    }
     addToCart({
       id: product.id,
       name: product.name,
@@ -196,42 +201,42 @@ function ProductCard({ product, viewMode }: { product: CatalogProduct; viewMode:
         </button>
       </div>
       <div className="p-2 sm:p-4">
-        {/* Stock Badge - moved out of image to avoid overlap on mobile */}
-        <div className={`inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium mb-1.5 ${
-          product.inStock
-            ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20"
-            : "bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20"
-        }`}>
-          {product.inStock ? <><Check className="w-3 h-3" /> В наличии</> : "Под заказ"}
-        </div>
-
-        {/* Name - 1 line */}
-        <h3 className="font-semibold text-xs sm:text-sm line-clamp-2 sm:line-clamp-1 font-[family-name:var(--font-heading)] group-hover:text-primary transition-colors mb-1">
+        {/* Name */}
+        <h3 className="font-semibold text-xs sm:text-sm line-clamp-2 sm:line-clamp-1 font-[family-name:var(--font-heading)] group-hover:text-primary transition-colors mb-1.5 sm:mb-2">
           {product.name}
         </h3>
 
         {/* Description - 2 lines (hidden on mobile) */}
-        <p className="hidden sm:block text-xs text-muted-foreground line-clamp-2 mb-2 min-h-[2.5rem]">
+        <p className="hidden sm:block text-xs text-muted-foreground line-clamp-2 mb-3 min-h-[2.5rem]">
           {product.description}
         </p>
 
         {/* Size - always visible, important for users */}
         {product.size !== "—" && (
-          <div className="text-[10px] sm:text-xs text-muted-foreground mb-1 truncate">
+          <div className="text-[10px] sm:text-xs text-muted-foreground mb-1.5 sm:mb-2 truncate">
             {product.size}
           </div>
         )}
 
         {/* Article and extra characteristics */}
-        <div className="hidden sm:flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground mb-2">
+        <div className="hidden sm:flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground mb-3">
           <span>Арт: {product.article}</span>
           {product.materials !== "—" && <span>Материал: {product.materials}</span>}
           {product.weight !== "—" && <span>Вес: {product.weight}</span>}
         </div>
 
-        {/* Price - large and visible */}
-        <div className="text-base sm:text-xl font-extrabold text-gold-gradient mb-1.5 sm:mb-3">
-          {product.price.toLocaleString()} ₽
+        {/* Price + Stock badge */}
+        <div className="flex items-center gap-2 mb-1.5 sm:mb-3">
+          <div className="text-base sm:text-xl font-extrabold text-amber-700 dark:text-amber-500">
+            {product.price.toLocaleString()} ₽
+          </div>
+          <div className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] sm:text-[11px] font-medium ${
+            product.inStock
+              ? "bg-green-500/10 text-green-600 dark:text-green-400"
+              : "bg-orange-500/10 text-orange-600 dark:text-orange-400"
+          }`}>
+            {product.inStock ? <><Check className="w-2.5 h-2.5" /> В наличии</> : "Под заказ"}
+          </div>
         </div>
 
         {/* Mobile: just cart button, Desktop: quantity + cart */}
