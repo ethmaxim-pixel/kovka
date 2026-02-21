@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PhoneMaskedInput from "@/components/PhoneMaskedInput";
+import { trpc } from "@/lib/trpc";
 
 /*
  * Contacts Page - Kovka Dvorik
@@ -28,19 +29,37 @@ export default function Contacts() {
     message: "",
     consent: false
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const contactMutation = trpc.contact.submit.useMutation({
+    onSuccess: () => {
+      toast.success("Сообщение отправлено! Мы свяжемся с вами в ближайшее время.");
+      setFormData({ name: "", phone: "", email: "", message: "", consent: false });
+    },
+    onError: (error) => {
+      toast.error(error.message || "Ошибка отправки. Попробуйте позже.");
+    },
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.name.trim()) {
+      toast.error("Введите ваше имя");
+      return;
+    }
+    if (!formData.phone.trim() || formData.phone.replace(/\D/g, "").length < 11) {
+      toast.error("Введите корректный номер телефона");
+      return;
+    }
     if (!formData.consent) {
       toast.error("Необходимо согласие на обработку персональных данных");
       return;
     }
-    setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    toast.success("Сообщение отправлено! Мы свяжемся с вами в ближайшее время.");
-    setFormData({ name: "", phone: "", email: "", message: "", consent: false });
-    setIsSubmitting(false);
+    const messageParts = [formData.message];
+    if (formData.email.trim()) messageParts.push(`Email: ${formData.email.trim()}`);
+    contactMutation.mutate({
+      name: formData.name.trim(),
+      phone: formData.phone.trim(),
+      message: messageParts.filter(Boolean).join("\n") || undefined,
+    });
   };
 
   return (
@@ -234,9 +253,9 @@ export default function Contacts() {
                     type="submit"
                     size="lg"
                     className="w-full btn-gold rounded-lg font-semibold"
-                    disabled={isSubmitting}
+                    disabled={contactMutation.isPending}
                   >
-                    {isSubmitting ? (
+                    {contactMutation.isPending ? (
                       "Отправка..."
                     ) : (
                       <>
