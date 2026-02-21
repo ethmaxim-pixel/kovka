@@ -292,12 +292,12 @@ export default function Home() {
           </div>
         </div>
         
-        {/* Scroll indicator */}
+        {/* Scroll indicator - hidden on mobile to prevent overlap */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.5 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+          className="hidden lg:flex absolute bottom-8 left-1/2 -translate-x-1/2"
         >
           <div className="w-6 h-10 rounded-full border-2 border-primary/50 flex justify-center pt-2">
             <motion.div
@@ -486,22 +486,22 @@ export default function Home() {
             {projects.map((project) => (
               <motion.div key={project.id} variants={fadeInUp}>
                 <Link href="/examples" className="block group">
-                  <div className="relative aspect-video rounded-xl overflow-hidden card-hover">
-                    <img
-                      src={project.image}
-                      alt={project.category}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-6">
-                      <h3 className="text-xl font-bold mb-1 font-[family-name:var(--font-heading)]">
+                  <div className="rounded-xl overflow-hidden card-hover bg-card border border-border/50">
+                    <div className="relative aspect-video overflow-hidden">
+                      <img
+                        src={project.image}
+                        alt={project.category}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                    <div className="p-4 md:p-6">
+                      <h3 className="text-lg md:text-xl font-bold mb-1 font-[family-name:var(--font-heading)] group-hover:text-primary transition-colors">
                         {project.category}
                       </h3>
                       <p className="text-sm text-muted-foreground">
                         {project.description}
                       </p>
                     </div>
-                    <div className="absolute inset-0 border border-primary/0 group-hover:border-primary/50 rounded-xl transition-colors" />
                   </div>
                 </Link>
               </motion.div>

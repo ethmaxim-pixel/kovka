@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, X, Phone, Package, ShoppingCart, Heart, Trash2, Sun, Moon, PhoneCall, ChevronDown } from "lucide-react";
+import { Menu, X, Phone, Package, ShoppingCart, Heart, Trash2, Sun, Moon, PhoneCall, ChevronDown, Plus, Minus } from "lucide-react";
 import CallbackDialog from "./CallbackDialog";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -81,8 +81,9 @@ export default function Header() {
   const [callbackOpen, setCallbackOpen] = useState(false);
   const [location] = useLocation();
 
-  const { items: cartItems, totalItems: cartCount, totalPrice, removeItem: removeCartItem, updateQuantity } = useCart();
+  const { items: cartItems, totalItems: cartCount, totalPrice, removeItem: removeCartItem, updateQuantity, addItem: addToCart, isInCart } = useCart();
   const { items: favoriteItems, totalItems: favoritesCount, removeItem: removeFavorite } = useFavorites();
+  const [favQuantities, setFavQuantities] = useState<Record<number, number>>({});
   const { theme, toggleTheme, switchable } = useTheme();
 
   // Cart Sheet Content (reusable)
@@ -108,6 +109,20 @@ export default function Header() {
                 <Link href={`/product/${item.id}`} className="text-sm font-medium hover:text-primary line-clamp-2">
                   {item.name}
                 </Link>
+                {/* Product characteristics */}
+                {(item.category || item.size || item.weight) && (
+                  <div className="flex flex-wrap gap-x-2 gap-y-0 mt-0.5">
+                    {item.size && item.size !== "—" && (
+                      <span className="text-[10px] text-muted-foreground">{item.size}</span>
+                    )}
+                    {item.weight && item.weight !== "—" && (
+                      <span className="text-[10px] text-muted-foreground">{item.weight}</span>
+                    )}
+                    {item.materials && item.materials !== "—" && (
+                      <span className="text-[10px] text-muted-foreground">{item.materials}</span>
+                    )}
+                  </div>
+                )}
                 <p className="text-primary font-bold mt-1">{item.price.toLocaleString()} ₽</p>
                 <div className="flex items-center gap-2 mt-2">
                   <button
@@ -161,23 +176,58 @@ export default function Header() {
             <p className="text-sm mt-1">Добавьте товары из каталога</p>
           </div>
         ) : (
-          favoriteItems.map((item) => (
-            <div key={item.id} className="flex gap-3 p-3 rounded-lg bg-muted/30 border border-border/50">
-              <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-lg" />
-              <div className="flex-1 min-w-0">
-                <Link href={`/product/${item.id}`} className="text-sm font-medium hover:text-primary line-clamp-2">
-                  {item.name}
-                </Link>
-                <p className="text-primary font-bold mt-1">{item.price.toLocaleString()} ₽</p>
+          favoriteItems.map((item) => {
+            const qty = favQuantities[item.id] || 1;
+            const inCart = isInCart(item.id);
+            return (
+              <div key={item.id} className="p-3 rounded-lg bg-muted/30 border border-border/50">
+                <div className="flex gap-3">
+                  <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-lg" />
+                  <div className="flex-1 min-w-0">
+                    <Link href={`/product/${item.id}`} className="text-sm font-medium hover:text-primary line-clamp-2">
+                      {item.name}
+                    </Link>
+                    <p className="text-primary font-bold mt-1">{item.price.toLocaleString()} ₽</p>
+                  </div>
+                  <button
+                    onClick={() => removeFavorite(item.id)}
+                    className="p-1.5 text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+                {/* Add to cart controls */}
+                <div className="flex items-center gap-2 mt-2">
+                  <div className="flex items-center border border-border/50 rounded-lg">
+                    <button
+                      onClick={() => setFavQuantities(p => ({ ...p, [item.id]: Math.max(1, qty - 1) }))}
+                      className="w-7 h-7 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-l-lg"
+                    >
+                      <Minus className="w-3 h-3" />
+                    </button>
+                    <span className="w-7 text-center text-xs font-medium">{qty}</span>
+                    <button
+                      onClick={() => setFavQuantities(p => ({ ...p, [item.id]: qty + 1 }))}
+                      className="w-7 h-7 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-r-lg"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <Button
+                    size="sm"
+                    className={`flex-1 h-7 text-xs rounded-lg ${inCart ? "bg-green-600 hover:bg-green-700 text-white" : "btn-gold"}`}
+                    onClick={() => {
+                      addToCart({ id: item.id, name: item.name, price: item.price, image: item.image }, qty);
+                      setFavQuantities(p => ({ ...p, [item.id]: 1 }));
+                    }}
+                  >
+                    <ShoppingCart className="w-3 h-3 mr-1" />
+                    {inCart ? "В корзине" : "В корзину"}
+                  </Button>
+                </div>
               </div>
-              <button
-                onClick={() => removeFavorite(item.id)}
-                className="p-1.5 text-muted-foreground hover:text-destructive transition-colors"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </>

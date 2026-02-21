@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSearch, Link } from "wouter";
-import { motion } from "framer-motion";
-import { Search, Filter, Grid, List, ShoppingCart, Heart, Plus, Minus, RefreshCw, ChevronDown, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, Filter, Grid, List, ShoppingCart, Heart, Plus, Minus, RefreshCw, ChevronDown, Check, ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -60,6 +60,11 @@ function ProductCard({ product, viewMode }: { product: CatalogProduct; viewMode:
       name: product.name,
       price: product.price,
       image: product.image,
+      article: product.article,
+      category: product.category,
+      size: product.size,
+      weight: product.weight,
+      materials: product.materials,
     }, quantity);
     toast.success(`${product.name} (${quantity} шт.) добавлен в корзину`);
     setQuantity(1);
@@ -227,7 +232,7 @@ function ProductCard({ product, viewMode }: { product: CatalogProduct; viewMode:
 
         {/* Price + Stock badge */}
         <div className="flex items-center gap-2 mb-1.5 sm:mb-3">
-          <div className="text-base sm:text-xl font-extrabold text-amber-700 dark:text-amber-500">
+          <div className="text-base sm:text-xl font-extrabold text-stone-900 dark:text-stone-100">
             {product.price.toLocaleString()} ₽
           </div>
           <div className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] sm:text-[11px] font-medium ${
@@ -306,6 +311,14 @@ export default function Catalog() {
   });
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  // Scroll-to-top button visibility
+  useEffect(() => {
+    const handleScroll = () => setShowScrollTop(window.scrollY > 400);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Fetch category tree from DB
   const { data: categoryTree } = trpc.catalog.categories.list.useQuery();
@@ -544,6 +557,22 @@ export default function Catalog() {
           </div>
         </div>
       </main>
+
+      {/* Scroll to top - mobile only */}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="lg:hidden fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center"
+            aria-label="Наверх"
+          >
+            <ArrowUp className="w-5 h-5" />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       <Footer />
     </div>

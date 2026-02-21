@@ -488,6 +488,11 @@ export default function Product() {
       name: product.name,
       price: product.price,
       image: product.image,
+      article: product.article,
+      category: product.categoryName,
+      size: product.size,
+      weight: product.weight,
+      materials: product.materials,
     }, quantity);
     toast.success(`${product.name} (${quantity} шт.) добавлен в корзину`);
   };

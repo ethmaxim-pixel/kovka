@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, Package, Phone, User, MessageSquare, CheckCircle, Percent, Truck, MapPin } from "lucide-react";
+import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, Package, Phone, User, MessageSquare, CheckCircle, Percent, Truck, MapPin, Calculator, Weight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -98,6 +98,30 @@ export default function Cart() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [deliveryType, setDeliveryType] = useState<"pickup" | "delivery">("pickup");
+  const [deliveryDistance, setDeliveryDistance] = useState("");
+  const [calcTriggered, setCalcTriggered] = useState(false);
+
+  // Calculate total weight from cart items
+  const totalWeight = useMemo(() => {
+    return items.reduce((sum, item) => {
+      if (!item.weight || item.weight === "—") return sum;
+      const match = item.weight.match(/([\d.]+)/);
+      if (match) return sum + parseFloat(match[1]) * item.quantity;
+      return sum;
+    }, 0);
+  }, [items]);
+
+  const distNum = parseFloat(deliveryDistance) || 0;
+
+  // Delivery calculator query
+  const { data: calcResult } = trpc.delivery.calculate.useQuery(
+    {
+      distanceKm: distNum,
+      weightKg: totalWeight > 0 ? totalWeight : undefined,
+      orderTotal: totalPrice > 0 ? totalPrice : undefined,
+    },
+    { enabled: calcTriggered && distNum > 0 && deliveryType === "delivery" }
+  );
 
   // Fetch discount/delivery settings from DB
   const { data: settingsData } = trpc.settings.getMany.useQuery({
@@ -217,11 +241,17 @@ export default function Cart() {
       // Submit order via tRPC
       const deliveryInfo = deliveryType === "pickup" ? "Самовывоз" : "Доставка (ЛНР/ДНР)";
       const discountInfo = currentDiscount > 0 ? `Скидка ${currentDiscount}%: -${discountAmount.toLocaleString()} ₽` : "";
+      const weightInfo = totalWeight > 0 ? `Общий вес: ${totalWeight.toFixed(1)} кг` : "";
+      const calcInfo = calcTriggered && calcResult?.available && calcResult.cost > 0
+        ? `Расчёт доставки (${distNum} км): ${calcResult.cost.toLocaleString()} ₽`
+        : "";
       const fullComment = [
         formData.comment,
         `Способ получения: ${deliveryInfo}`,
+        weightInfo,
         discountInfo,
         deliveryCost > 0 ? `Доставка: от ${deliveryCost.toLocaleString()} ₽` : "",
+        calcInfo,
       ].filter(Boolean).join("\n");
 
       await submitOrderMutation.mutateAsync({
@@ -433,6 +463,15 @@ export default function Cart() {
                         <span className="text-muted-foreground">Товаров:</span>
                         <span>{totalItems} шт.</span>
                       </div>
+                      {totalWeight > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground flex items-center gap-1">
+                            <Weight className="w-3 h-3" />
+                            Общий вес:
+                          </span>
+                          <span>{totalWeight.toFixed(1)} кг</span>
+                        </div>
+                      )}
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Сумма:</span>
                         <span>{totalPrice.toLocaleString()} ₽</span>
@@ -489,6 +528,54 @@ export default function Cart() {
                           <p className="text-[11px] text-muted-foreground mt-1 pl-2">
                             Бесплатная доставка от {freeDeliveryMin.toLocaleString()} ₽
                           </p>
+                        )}
+                        {/* Delivery calculator */}
+                        {deliveryType === "delivery" && (
+                          <div className="mt-3 p-3 rounded-lg bg-muted/30 border border-border/30">
+                            <p className="text-xs font-medium mb-2 flex items-center gap-1">
+                              <Calculator className="w-3.5 h-3.5 text-primary" />
+                              Калькулятор доставки
+                            </p>
+                            <div className="flex gap-2">
+                              <input
+                                type="number"
+                                placeholder="Расстояние, км"
+                                value={deliveryDistance}
+                                onChange={(e) => { setDeliveryDistance(e.target.value); setCalcTriggered(false); }}
+                                className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:border-primary outline-none"
+                              />
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="shrink-0 h-9 text-xs border-primary/50 hover:bg-primary/10"
+                                onClick={() => { if (distNum > 0) setCalcTriggered(true); }}
+                                disabled={distNum <= 0}
+                              >
+                                Расчёт
+                              </Button>
+                            </div>
+                            {totalWeight > 0 && (
+                              <p className="text-[10px] text-muted-foreground mt-1">
+                                Вес: {totalWeight.toFixed(1)} кг (учтён автоматически)
+                              </p>
+                            )}
+                            {calcTriggered && calcResult && (
+                              <div className="mt-2 p-2 rounded-lg bg-primary/5 border border-primary/10">
+                                {calcResult.available ? (
+                                  <>
+                                    <p className="text-sm font-bold text-primary">
+                                      {calcResult.cost === 0 ? "Бесплатно!" : `${calcResult.cost.toLocaleString()} ₽`}
+                                    </p>
+                                    {calcResult.message && (
+                                      <p className="text-[10px] text-primary/80">{calcResult.message}</p>
+                                    )}
+                                  </>
+                                ) : (
+                                  <p className="text-[10px] text-muted-foreground">{calcResult.message}</p>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
 
@@ -602,6 +689,12 @@ export default function Cart() {
                         <span className="text-muted-foreground">Товары:</span>
                         <span>{totalPrice.toLocaleString()} ₽</span>
                       </div>
+                      {totalWeight > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Общий вес:</span>
+                          <span>{totalWeight.toFixed(1)} кг</span>
+                        </div>
+                      )}
                       {currentDiscount > 0 && (
                         <div className="flex justify-between text-sm">
                           <span className="text-green-500">Скидка {currentDiscount}%:</span>
@@ -615,7 +708,7 @@ export default function Cart() {
                         </div>
                       )}
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Доставка:</span>
+                        <span className="text-muted-foreground">Способ:</span>
                         <span>{deliveryType === "pickup" ? "Самовывоз" : "Доставка ЛНР/ДНР"}</span>
                       </div>
                       <div className="flex justify-between pt-2 border-t border-border/50">
