@@ -106,24 +106,24 @@ function ProductCard({ product, viewMode }: { product: CatalogProduct; viewMode:
         href={productUrl}
         className="group flex rounded-xl bg-card border border-border/50 overflow-hidden card-hover"
       >
-        <div className="relative w-48 shrink-0">
+        <div className="relative w-28 sm:w-48 shrink-0">
           <img
             src={product.image}
             alt={product.name}
             className="w-full h-full object-cover"
           />
           {/* Stock Badge */}
-          <div className={`absolute top-2 left-2 px-2 py-0.5 rounded-full text-xs font-medium ${
-            product.inStock 
-              ? "bg-green-500/20 text-green-400 border border-green-500/30" 
-              : "bg-orange-500/20 text-orange-400 border border-orange-500/30"
+          <div className={`absolute top-1.5 left-1.5 sm:top-2 sm:left-2 px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium ${
+            product.inStock
+              ? "bg-green-500/20 text-green-600 dark:text-green-400 border border-green-500/30"
+              : "bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/30"
           }`}>
             {product.inStock ? "В наличии" : "Под заказ"}
           </div>
           {/* Favorite Button */}
           <button
             onClick={handleToggleFavorite}
-            className={`absolute top-2 right-2 p-1.5 rounded-lg backdrop-blur-sm transition-all ${
+            className={`absolute top-1.5 right-1.5 sm:top-2 sm:right-2 p-1.5 rounded-lg backdrop-blur-sm transition-all ${
               isFavorite(product.id)
                 ? "bg-primary/20 text-primary"
                 : "bg-background/80 text-muted-foreground hover:text-primary"
@@ -133,25 +133,26 @@ function ProductCard({ product, viewMode }: { product: CatalogProduct; viewMode:
             <Heart className={`w-4 h-4 ${isFavorite(product.id) ? "fill-current" : ""}`} />
           </button>
         </div>
-        <div className="p-4 flex-1 flex flex-col">
-          <h3 className="font-semibold text-sm line-clamp-1 font-[family-name:var(--font-heading)] group-hover:text-primary transition-colors mb-1">
+        <div className="p-2.5 sm:p-4 flex-1 flex flex-col min-w-0">
+          <h3 className="font-semibold text-xs sm:text-sm line-clamp-2 sm:line-clamp-1 font-[family-name:var(--font-heading)] group-hover:text-primary transition-colors mb-1">
             {product.name}
           </h3>
-          <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+          <p className="hidden sm:block text-xs text-muted-foreground line-clamp-2 mb-2">
             {product.description}
           </p>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground mb-2">
+          <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-4 gap-y-0.5 text-[10px] sm:text-xs text-muted-foreground mb-1.5 sm:mb-2">
             <span>Арт: {product.article}</span>
-            <span>Размер: {product.size}</span>
-            {product.materials !== "—" && <span>Материал: {product.materials}</span>}
+            {product.size !== "—" && <span className="sm:hidden">{product.size}</span>}
+            <span className="hidden sm:inline">Размер: {product.size}</span>
+            {product.materials !== "—" && <span className="hidden sm:inline">Материал: {product.materials}</span>}
             {product.weight !== "—" && <span>Вес: {product.weight}</span>}
           </div>
-          <div className="mt-auto flex items-center justify-between">
-            <span className="text-xl font-bold text-gold-gradient">
+          <div className="mt-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2">
+            <span className="text-base sm:text-xl font-extrabold text-stone-900 dark:text-stone-100">
               {product.price.toLocaleString()} ₽
             </span>
             <div className="flex items-center gap-2">
-              <div className="flex items-center border border-border/50 rounded-lg">
+              <div className="hidden sm:flex items-center border border-border/50 rounded-lg">
                 <button
                   onClick={decrementQuantity}
                   className="p-1.5 hover:bg-muted/50 transition-colors rounded-l-lg"
@@ -168,11 +169,16 @@ function ProductCard({ product, viewMode }: { product: CatalogProduct; viewMode:
               </div>
               <Button
                 size="sm"
-                className="btn-gold rounded-lg transition-all"
+                className={`rounded-lg transition-all text-xs sm:text-sm ${
+                  isInCart(product.id) ? "bg-green-600 hover:bg-green-700 text-white" : "btn-gold"
+                }`}
                 onClick={handleAddToCart}
               >
-                <ShoppingCart className="w-4 h-4 mr-1" />
-                В корзину
+                {isInCart(product.id) ? (
+                  <><Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" /> В корзине</>
+                ) : (
+                  <><ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" /> В корзину</>
+                )}
               </Button>
             </div>
           </div>

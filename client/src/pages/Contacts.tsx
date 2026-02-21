@@ -85,8 +85,8 @@ export default function Contacts() {
                   </div>
                   <div>
                     <h3 className="font-semibold mb-1">Телефон</h3>
-                    <a href="tel:+79591110000" className="text-lg text-gold-gradient hover:underline">
-                      +7 (959) 111-00-00
+                    <a href="tel:+79591313298" className="text-lg text-gold-gradient hover:underline">
+                      +7 (959) 131-32-98
                     </a>
                     <p className="text-sm text-muted-foreground mt-1">
                       Звоните в рабочее время

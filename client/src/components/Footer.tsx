@@ -44,15 +44,15 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-sm text-muted-foreground mb-6">
-              Интернет-магазин элементов художественной ковки. Более 8000 наименований кованых элементов и готовых изделий.
+              Интернет-магазин элементов художественной ковки. Более 1000 наименований кованых элементов и готовых изделий.
             </p>
             <div className="flex flex-col gap-3">
               <a
-                href="tel:+79591110000"
+                href="tel:+79591313298"
                 className="flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors"
               >
                 <Phone className="w-4 h-4 text-primary" />
-                <span>+7 959 111 00 00</span>
+                <span>+7 959 13 13 298</span>
               </a>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <MapPin className="w-4 h-4 text-primary" />

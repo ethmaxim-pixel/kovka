@@ -66,7 +66,7 @@ const socialLinks = [
     )
   },
   {
-    href: "https://wa.me/79591110000",
+    href: "https://wa.me/79591313298",
     label: "WhatsApp",
     icon: (
       <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
@@ -241,11 +241,11 @@ export default function Header() {
           <div className="flex items-center justify-between h-9 text-xs">
             {/* Left: Phone */}
             <a
-              href="tel:+79591110000"
+              href="tel:+79591313298"
               className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
             >
               <Phone className="w-3.5 h-3.5" />
-              <span className="font-medium">+7 959 111 00 00</span>
+              <span className="font-medium">+7 959 13 13 298</span>
             </a>
 
             {/* Right: Social + Theme */}
@@ -292,8 +292,8 @@ export default function Header() {
                   loading="eager"
                 />
               </div>
-              <div className="hidden sm:flex flex-col">
-                <span className="text-sm md:text-base font-bold text-gold-gradient font-[family-name:var(--font-heading)] leading-tight">
+              <div className="flex flex-col">
+                <span className="text-xs sm:text-sm md:text-base font-bold text-gold-gradient font-[family-name:var(--font-heading)] leading-tight">
                   Ковка в Дворик
                 </span>
                 <span className="text-[10px] text-muted-foreground leading-tight hidden lg:block">
@@ -456,11 +456,11 @@ export default function Header() {
               <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
                 {/* Phone */}
                 <a
-                  href="tel:+79591110000"
+                  href="tel:+79591313298"
                   className="flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground hover:text-primary"
                 >
                   <Phone className="w-4 h-4" />
-                  <span className="font-medium">+7 959 111 00 00</span>
+                  <span className="font-medium">+7 959 13 13 298</span>
                 </a>
 
                 {/* Social Links */}

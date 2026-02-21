@@ -115,7 +115,7 @@ export function OrganizationSchema() {
     logo: 'https://kovka-dvorik.ru/images/logo.jpg',
     contactPoint: {
       '@type': 'ContactPoint',
-      telephone: '+7-959-111-00-00',
+      telephone: '+7-959-131-32-98',
       contactType: 'sales',
       availableLanguage: 'Russian',
     },
@@ -280,7 +280,7 @@ export function LocalBusinessSchema() {
     name: 'Ковка в Дворик',
     description: 'Интернет-магазин элементов художественной ковки. Более 8000 наименований кованых элементов и готовых изделий.',
     image: 'https://kovka-dvorik.ru/images/hero-warehouse.png',
-    telephone: '+7-959-111-00-00',
+    telephone: '+7-959-131-32-98',
     address: {
       '@type': 'PostalAddress',
       streetAddress: 'ул. Лутугинская',

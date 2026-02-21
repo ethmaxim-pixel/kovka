@@ -226,12 +226,12 @@ export default function Home() {
         
         <div className="container relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            {/* Left side - Text content */}
+            {/* Left side - Text content (on mobile: order-2, image first) */}
             <motion.div
               initial="hidden"
               animate="visible"
               variants={staggerContainer}
-              className="max-w-2xl"
+              className="max-w-2xl order-2 lg:order-1"
             >
               <motion.h1
                 variants={fadeInUp}
@@ -246,7 +246,7 @@ export default function Home() {
                 variants={fadeInUp}
                 className="text-lg md:text-xl text-muted-foreground mb-8"
               >
-                Более 8000 наименований кованых элементов и готовых изделий. 
+                Более 1000 наименований кованых элементов и готовых изделий. 
                 Балясины, волюты, листья, виноград и другие элементы художественной ковки.
               </motion.p>
               
@@ -272,12 +272,12 @@ export default function Home() {
               </motion.div>
             </motion.div>
             
-            {/* Right side - Hero image */}
+            {/* Right side - Hero image (on mobile: order-1, shown first) */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9, x: 50 }}
               animate={{ opacity: 1, scale: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
-              className="flex justify-center items-center"
+              className="flex justify-center items-center order-1 lg:order-2"
             >
               <div className="relative">
                 <img
@@ -658,8 +658,8 @@ export default function Home() {
                   </div>
                   <div>
                     <h3 className="font-semibold mb-1">Телефон</h3>
-                    <a href="tel:+79591110000" className="text-lg text-gold-gradient hover:underline">
-                      +7 (959) 111-00-00
+                    <a href="tel:+79591313298" className="text-lg text-gold-gradient hover:underline">
+                      +7 (959) 131-32-98
                     </a>
                     <p className="text-sm text-muted-foreground mt-1">Звоните в рабочее время</p>
                   </div>
