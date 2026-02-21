@@ -284,9 +284,9 @@ export default function Header() {
           <div className="flex items-center justify-between h-16 md:h-14">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 group shrink-0">
-              <div className="w-10 h-10 md:w-9 md:h-9 flex items-center justify-center bg-white rounded-lg p-1 overflow-hidden">
+              <div className="w-10 h-10 md:w-9 md:h-9 flex items-center justify-center rounded-lg p-1 overflow-hidden">
                 <img
-                  src="/images/logo.jpg"
+                  src={theme === "dark" ? "/images/logo-light.svg" : "/images/logo-dark.svg"}
                   alt="Ковка в Дворик"
                   className="w-full h-full object-contain"
                   loading="eager"

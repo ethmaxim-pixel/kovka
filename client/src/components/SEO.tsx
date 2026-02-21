@@ -112,7 +112,7 @@ export function OrganizationSchema() {
     name: 'Ковка в Дворик',
     description: 'Интернет-магазин элементов художественной ковки',
     url: 'https://kovka-dvorik.ru',
-    logo: 'https://kovka-dvorik.ru/images/logo.jpg',
+    logo: 'https://kovka-dvorik.ru/images/logo-dark.svg',
     contactPoint: {
       '@type': 'ContactPoint',
       telephone: '+7-959-131-32-98',

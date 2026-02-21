@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { Phone, MapPin, Clock, Mail } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 /*
  * Footer Component - Kovka Dvorik
@@ -27,6 +28,7 @@ const footerLinks = {
 };
 
 export default function Footer() {
+  const { theme } = useTheme();
   return (
     <footer className="bg-card border-t border-border/50">
       <div className="container py-12 lg:py-16">
@@ -34,9 +36,9 @@ export default function Footer() {
           {/* Brand */}
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center gap-3 mb-4">
-              <img 
-                src="/images/logo.jpg" 
-                alt="Ковка в Дворик" 
+              <img
+                src={theme === "dark" ? "/images/logo-light.svg" : "/images/logo-dark.svg"}
+                alt="Ковка в Дворик"
                 className="w-12 h-12 object-contain"
               />
               <span className="text-lg font-bold text-gold-gradient font-[family-name:var(--font-heading)]">
