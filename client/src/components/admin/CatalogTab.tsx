@@ -475,6 +475,13 @@ export default function CatalogTab() {
                       <div className="cat-product-info">
                         <span className="cat-product-name">{product.name}</span>
                         <span className="cat-product-article">{product.article}</span>
+                        {((product as any).dimensions || (product as any).weight || (product as any).materials) && (
+                          <div className="cat-product-chars">
+                            {(product as any).dimensions && (product as any).dimensions !== "—" && <span>{(product as any).dimensions}</span>}
+                            {(product as any).weight && (product as any).weight !== "—" && <span>{(product as any).weight}</span>}
+                            {(product as any).materials && (product as any).materials !== "—" && <span>{(product as any).materials}</span>}
+                          </div>
+                        )}
                       </div>
                       <span className="cat-price">
                         {product.priceMin ? <>{parseFloat(product.priceMin).toLocaleString("ru-RU")} ₽</> : <span className="text-muted-foreground">—</span>}
@@ -851,6 +858,8 @@ const catalogStyles = `
 .cat-product-info { display: flex; flex-direction: column; min-width: 0; }
 .cat-product-name { font-size: 14px; color: #3D3530; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cat-product-article { font-size: 11px; color: #9A938C; }
+.cat-product-chars { display: flex; flex-wrap: wrap; gap: 4px 8px; margin-top: 2px; }
+.cat-product-chars span { font-size: 11px; color: #9A938C; white-space: nowrap; }
 .cat-price { font-size: 14px; font-weight: 600; color: #3D3530; }
 .cat-category { font-size: 13px; color: #6B5E54; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cat-status { font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: 12px; display: inline-flex; align-items: center; gap: 4px; width: fit-content; }
